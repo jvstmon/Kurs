@@ -6,7 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <meta name="theme-color" content="#173b2a">
-  <meta name="description" content="Testy dla kandydatów na instruktorów nauki jazdy">
+  <meta
+    name="description"
+    content="Testy dla kandydatów na instruktorów nauki jazdy"
+  >
 
   <title>Testy instruktora</title>
 
@@ -273,6 +276,7 @@
       <div id="answers" class="answers"></div>
 
       <div class="buttons">
+
         <button id="checkBtn" class="primary">
           Sprawdź odpowiedź
         </button>
@@ -280,6 +284,7 @@
         <button id="nextBtn" class="secondary hidden">
           Następne pytanie
         </button>
+
       </div>
 
       <div id="result" class="result"></div>
@@ -316,1446 +321,1431 @@
 
 <script>
 
-  /* =========================================================
-     USTAWIENIA
-     ========================================================= */
+/* =========================================================
+   USTAWIENIA
+   ========================================================= */
 
-  const QUESTIONS_PER_TEST = 20;
+const QUESTIONS_PER_TEST = 20;
+
+/*
+  Zmieniamy wersję pliku Excel, żeby przeglądarka
+  pobrała aktualną bazę.
+*/
+const EXCEL_FILE = "Baza_danych.xlsx?v=20260921-5";
+
+
+/* =========================================================
+   ZMIENNE
+   ========================================================= */
+
+let allQuestions = [];
+let testQuestions = [];
+
+let currentQuestionIndex = 0;
+let correctCount = 0;
+
+let answerChecked = false;
+
+
+/* =========================================================
+   ELEMENTY HTML
+   ========================================================= */
+
+const loadingEl =
+  document.getElementById("loading");
+
+const errorEl =
+  document.getElementById("error");
+
+const appEl =
+  document.getElementById("app");
+
+const counterEl =
+  document.getElementById("counter");
+
+const scoreInfoEl =
+  document.getElementById("scoreInfo");
+
+const questionEl =
+  document.getElementById("question");
+
+const answersEl =
+  document.getElementById("answers");
+
+const checkBtn =
+  document.getElementById("checkBtn");
+
+const nextBtn =
+  document.getElementById("nextBtn");
+
+const resultEl =
+  document.getElementById("result");
+
+const explanationEl =
+  document.getElementById("explanation");
+
+const legalEl =
+  document.getElementById("legal");
+
+const questionImageEl =
+  document.getElementById("questionImage");
+
+const questionCardEl =
+  document.getElementById("questionCard");
+
+const summaryEl =
+  document.getElementById("summary");
+
+const finalScoreEl =
+  document.getElementById("finalScore");
+
+const restartBtn =
+  document.getElementById("restartBtn");
+
+
+/* =========================================================
+   NORMALIZACJA NAZW KOLUMN
+   ========================================================= */
+
+function normalizeHeader(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return "";
+  }
+
+  return String(value)
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "_");
+}
+
+
+/* =========================================================
+   POPRAWNE ODPOWIEDZI
+   =========================================================
+
+   Excel:
+
+     1       = A
+     2       = B
+     3       = C
+
+     1|2     = A + B
+     1|3     = A + C
+     2|3     = B + C
+     1|2|3   = A + B + C
+
+   Wewnątrz aplikacji używamy WYŁĄCZNIE liter:
+
+     A
+     B
+     C
+
+   Dzięki temu nie ma już żadnego mieszania:
+     indeksów 0–2,
+     numerów 1–3,
+     liter A–C.
+   ========================================================= */
+
+function parseCorrectAnswers(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return [];
+  }
+
+  const text =
+    String(value).trim();
+
+  if (!text) {
+    return [];
+  }
 
   /*
-    Zmieniaj numer wersji, jeżeli chcesz wymusić
-    ponowne pobranie bazy Excel.
+    Szukamy wyłącznie cyfr 1, 2 i 3.
+
+    Obsługiwane są np.:
+
+      1
+      2
+      3
+      1|2
+      1|3
+      2|3
+      1|2|3
+
+    oraz przypadkowe warianty zapisu:
+      2 | 3
+      2,3
+      2/3
   */
-  const EXCEL_FILE = "Baza_danych.xlsx?v=20260921-4";
 
+  const numbers =
+    text.match(/[123]/g);
 
-  /* =========================================================
-     ZMIENNE
-     ========================================================= */
-
-  let allQuestions = [];
-  let testQuestions = [];
-
-  let currentQuestionIndex = 0;
-  let correctCount = 0;
-
-  let answerChecked = false;
-
-
-  /* =========================================================
-     ELEMENTY HTML
-     ========================================================= */
-
-  const loadingEl = document.getElementById("loading");
-  const errorEl = document.getElementById("error");
-  const appEl = document.getElementById("app");
-
-  const counterEl = document.getElementById("counter");
-  const scoreInfoEl = document.getElementById("scoreInfo");
-
-  const questionEl = document.getElementById("question");
-  const answersEl = document.getElementById("answers");
-
-  const checkBtn = document.getElementById("checkBtn");
-  const nextBtn = document.getElementById("nextBtn");
-
-  const resultEl = document.getElementById("result");
-  const explanationEl = document.getElementById("explanation");
-  const legalEl = document.getElementById("legal");
-
-  const questionImageEl = document.getElementById("questionImage");
-
-  const questionCardEl = document.getElementById("questionCard");
-  const summaryEl = document.getElementById("summary");
-
-  const finalScoreEl = document.getElementById("finalScore");
-  const restartBtn = document.getElementById("restartBtn");
-
-
-  /* =========================================================
-     NORMALIZACJA NAZW KOLUMN
-     ========================================================= */
-
-  function normalizeHeader(value) {
-
-    if (value === null || value === undefined) {
-      return "";
-    }
-
-    return String(value)
-      .trim()
-      .toUpperCase()
-      .replace(/\s+/g, "_");
-
+  if (!numbers) {
+    return [];
   }
 
+  const letters =
+    numbers.map(number => {
 
-  /* =========================================================
-     ODCZYT POPRAWNYCH ODPOWIEDZI
-     =========================================================
+      if (number === "1") {
+        return "A";
+      }
 
-     W CAŁEJ LOGICE APLIKACJI:
+      if (number === "2") {
+        return "B";
+      }
 
-       1 = A
-       2 = B
-       3 = C
+      if (number === "3") {
+        return "C";
+      }
 
-     Excel:
+      return null;
 
-       1       -> A
-       2       -> B
-       3       -> C
+    }).filter(Boolean);
 
-       1|2     -> A + B
-       1|3     -> A + C
-       2|3     -> B + C
 
-       1|2|3   -> A + B + C
+  return [
+    ...new Set(letters)
+  ];
+}
 
-     Ważne:
-     POPRAWNE jest przechowywane jako numery 1–3.
-     Nie używamy tutaj indeksów 0–2.
-     ========================================================= */
 
-  function parseCorrectAnswers(value) {
+/* =========================================================
+   TABLICA ODPOWIEDZI
+   ========================================================= */
 
-    if (value === null || value === undefined) {
-      return [];
-    }
+const ANSWER_LETTERS = [
+  "A",
+  "B",
+  "C"
+];
 
-    const text = String(value)
-      .trim()
-      .replace(/\s+/g, "");
 
-    if (!text) {
-      return [];
-    }
+/* =========================================================
+   PORÓWNANIE ODPOWIEDZI
+   ========================================================= */
 
-    return text
-      .split("|")
-      .map(Number)
-      .filter(n =>
-        n === 1 ||
-        n === 2 ||
-        n === 3
-      )
-      .filter(
-        (n, i, arr) =>
-          arr.indexOf(n) === i
-      )
-      .sort(
-        (a, b) => a - b
-      );
+function arraysEqual(a, b) {
 
+  if (a.length !== b.length) {
+    return false;
   }
 
+  const aa =
+    [...a].sort();
 
-  /* =========================================================
-     NUMER ODPOWIEDZI → LITERA
-     =========================================================
+  const bb =
+    [...b].sort();
 
-     1 → A
-     2 → B
-     3 → C
+  for (
+    let i = 0;
+    i < aa.length;
+    i++
+  ) {
 
-     To jest osobna funkcja, żeby nigdzie przypadkiem
-     nie użyć starego 65 + index.
-     ========================================================= */
-
-  function answerNumberToLetter(number) {
-
-    return String.fromCharCode(
-      64 + number
-    );
-
-  }
-
-
-  /* =========================================================
-     PORÓWNANIE ODPOWIEDZI
-     ========================================================= */
-
-  function arraysEqual(a, b) {
-
-    if (a.length !== b.length) {
+    if (aa[i] !== bb[i]) {
       return false;
     }
 
-    const aa =
-      [...a].sort(
-        (x, y) => x - y
+  }
+
+  return true;
+}
+
+
+/* =========================================================
+   LOSOWANIE
+   ========================================================= */
+
+function shuffle(array) {
+
+  const result =
+    [...array];
+
+  for (
+    let i = result.length - 1;
+    i > 0;
+    i--
+  ) {
+
+    const j =
+      Math.floor(
+        Math.random() * (i + 1)
       );
 
-    const bb =
-      [...b].sort(
-        (x, y) => x - y
+    [
+      result[i],
+      result[j]
+    ] = [
+      result[j],
+      result[i]
+    ];
+
+  }
+
+  return result;
+}
+
+
+/* =========================================================
+   WCZYTYWANIE EXCELA
+   ========================================================= */
+
+async function loadExcel() {
+
+  try {
+
+    const response =
+      await fetch(
+        EXCEL_FILE,
+        {
+          cache: "no-store"
+        }
       );
 
-    for (
-      let i = 0;
-      i < aa.length;
-      i++
+
+    if (!response.ok) {
+
+      throw new Error(
+        `Nie udało się wczytać pliku ${EXCEL_FILE}.`
+      );
+
+    }
+
+
+    const arrayBuffer =
+      await response.arrayBuffer();
+
+
+    const workbook =
+      XLSX.read(
+        arrayBuffer,
+        {
+          type: "array"
+        }
+      );
+
+
+    if (
+      !workbook.SheetNames.length
     ) {
 
-      if (aa[i] !== bb[i]) {
-        return false;
+      throw new Error(
+        "Plik Excel nie zawiera żadnego arkusza."
+      );
+
+    }
+
+
+    const sheetName =
+      workbook.SheetNames[0];
+
+    const sheet =
+      workbook.Sheets[sheetName];
+
+
+    if (!sheet) {
+
+      throw new Error(
+        `Nie znaleziono arkusza "${sheetName}".`
+      );
+
+    }
+
+
+    const rows =
+      XLSX.utils.sheet_to_json(
+        sheet,
+        {
+          header: 1,
+          defval: "",
+          raw: true
+        }
+      );
+
+
+    if (!rows.length) {
+
+      throw new Error(
+        "Arkusz Excel jest pusty."
+      );
+
+    }
+
+
+    /* =====================================================
+       ZNALEZIENIE NAGŁÓWKÓW
+       ===================================================== */
+
+    let headerRowIndex = -1;
+
+
+    for (
+      let r = 0;
+      r < rows.length;
+      r++
+    ) {
+
+      const row =
+        rows[r];
+
+      const normalized =
+        row.map(normalizeHeader);
+
+
+      if (
+        normalized.includes("ID") &&
+        normalized.includes("PYTANIE") &&
+        normalized.includes("POPRAWNE")
+      ) {
+
+        headerRowIndex = r;
+
+        break;
+
       }
 
     }
 
-    return true;
 
-  }
-
-
-  /* =========================================================
-     LOSOWANIE
-     ========================================================= */
-
-  function shuffle(array) {
-
-    const result = [...array];
-
-    for (
-      let i = result.length - 1;
-      i > 0;
-      i--
+    if (
+      headerRowIndex === -1
     ) {
 
-      const j =
-        Math.floor(
-          Math.random() * (i + 1)
-        );
-
-      [
-        result[i],
-        result[j]
-      ] =
-      [
-        result[j],
-        result[i]
-      ];
+      throw new Error(
+        "Nie znaleziono w Excelu wiersza nagłówków zawierającego kolumny ID, PYTANIE i POPRAWNE."
+      );
 
     }
 
-    return result;
 
-  }
-
-
-  /* =========================================================
-     WCZYTYWANIE EXCELA
-     ========================================================= */
-
-  async function loadExcel() {
-
-    try {
-
-      const response =
-        await fetch(
-          EXCEL_FILE,
-          {
-            cache: "no-store"
-          }
-        );
+    const headers =
+      rows[headerRowIndex]
+        .map(normalizeHeader);
 
 
-      if (!response.ok) {
+    /* =====================================================
+       INDEKSY KOLUMN
+       ===================================================== */
 
-        throw new Error(
-          `Nie udało się wczytać pliku ${EXCEL_FILE}.`
-        );
+    const idIndex =
+      headers.indexOf("ID");
 
+    const questionIndex =
+      headers.indexOf("PYTANIE");
+
+    const answer1Index =
+      headers.indexOf("ODPOWIEDZ_1");
+
+    const answer2Index =
+      headers.indexOf("ODPOWIEDZ_2");
+
+    const answer3Index =
+      headers.indexOf("ODPOWIEDZ_3");
+
+    const correctIndex =
+      headers.indexOf("POPRAWNE");
+
+    const explanationIndex =
+      headers.indexOf("WYJAŚNIENIE");
+
+    const legalIndex =
+      headers.indexOf("PODSTAWA_PRAWNA");
+
+    const imageIndex =
+      headers.indexOf("OBRAZ");
+
+
+    /* =====================================================
+       SPRAWDZENIE STRUKTURY
+       ===================================================== */
+
+    const missingColumns = [];
+
+
+    if (idIndex === -1) {
+      missingColumns.push("ID");
+    }
+
+    if (questionIndex === -1) {
+      missingColumns.push("PYTANIE");
+    }
+
+    if (answer1Index === -1) {
+      missingColumns.push("ODPOWIEDZ_1");
+    }
+
+    if (answer2Index === -1) {
+      missingColumns.push("ODPOWIEDZ_2");
+    }
+
+    if (answer3Index === -1) {
+      missingColumns.push("ODPOWIEDZ_3");
+    }
+
+    if (correctIndex === -1) {
+      missingColumns.push("POPRAWNE");
+    }
+
+
+    if (missingColumns.length) {
+
+      throw new Error(
+        "Brakuje kolumn w Excelu: " +
+        missingColumns.join(", ")
+      );
+
+    }
+
+
+    /* =====================================================
+       BUDOWANIE BAZY PYTAŃ
+       ===================================================== */
+
+    const questions = [];
+
+
+    for (
+      let r = headerRowIndex + 1;
+      r < rows.length;
+      r++
+    ) {
+
+      const row =
+        rows[r];
+
+
+      if (
+        !row ||
+        row.length === 0
+      ) {
+        continue;
       }
 
 
-      const arrayBuffer =
-        await response.arrayBuffer();
+      const id =
+        row[idIndex];
+
+      const question =
+        row[questionIndex];
 
 
-      const workbook =
-        XLSX.read(
-          arrayBuffer,
-          {
-            type: "array"
-          }
-        );
-
-
-      if (!workbook.SheetNames.length) {
-
-        throw new Error(
-          "Plik Excel nie zawiera żadnego arkusza."
-        );
-
+      if (
+        id === "" ||
+        id === null ||
+        id === undefined ||
+        question === "" ||
+        question === null ||
+        question === undefined
+      ) {
+        continue;
       }
 
 
-      const sheetName =
-        workbook.SheetNames[0];
+      /*
+        TO JEST JEDYNE MIEJSCE,
+        w którym POPRAWNE jest czytane z Excela.
+      */
 
-      const sheet =
-        workbook.Sheets[sheetName];
+      const correctRaw =
+        row[correctIndex];
 
 
-      if (!sheet) {
+      /*
+        Zamieniamy np.:
 
-        throw new Error(
-          `Nie znaleziono arkusza "${sheetName}".`
+          "2|3"
+
+        bezpośrednio na:
+
+          ["B", "C"]
+      */
+
+      const correctAnswers =
+        parseCorrectAnswers(
+          correctRaw
         );
 
-      }
 
+      /*
+        Pytanie bez poprawnej odpowiedzi
+        nie trafia do testu.
+      */
 
-      const rows =
-        XLSX.utils.sheet_to_json(
-          sheet,
-          {
-            header: 1,
-            defval: "",
-            raw: true
-          }
-        );
-
-
-      if (!rows.length) {
-
-        throw new Error(
-          "Arkusz Excel jest pusty."
-        );
-
-      }
-
-
-      /* =====================================================
-         ZNALEZIENIE WIERSZA NAGŁÓWKÓW
-         ===================================================== */
-
-      let headerRowIndex = -1;
-
-
-      for (
-        let r = 0;
-        r < rows.length;
-        r++
+      if (
+        correctAnswers.length === 0
       ) {
 
-        const row = rows[r];
-
-        const normalized =
-          row.map(normalizeHeader);
-
-
-        if (
-          normalized.includes("ID") &&
-          normalized.includes("PYTANIE") &&
-          normalized.includes("POPRAWNE")
-        ) {
-
-          headerRowIndex = r;
-
-          break;
-
-        }
-
-      }
-
-
-      if (headerRowIndex === -1) {
-
-        throw new Error(
-          "Nie znaleziono w Excelu wiersza nagłówków zawierającego kolumny ID, PYTANIE i POPRAWNE."
+        console.warn(
+          "Pominięto pytanie ID " +
+          id +
+          ". Nieprawidłowe POPRAWNE:",
+          correctRaw
         );
 
-      }
-
-
-      const headers =
-        rows[headerRowIndex]
-          .map(normalizeHeader);
-
-
-      /* =====================================================
-         INDEKSY KOLUMN
-         ===================================================== */
-
-      const idIndex =
-        headers.indexOf("ID");
-
-      const questionIndex =
-        headers.indexOf("PYTANIE");
-
-      const answer1Index =
-        headers.indexOf("ODPOWIEDZ_1");
-
-      const answer2Index =
-        headers.indexOf("ODPOWIEDZ_2");
-
-      const answer3Index =
-        headers.indexOf("ODPOWIEDZ_3");
-
-      const correctIndex =
-        headers.indexOf("POPRAWNE");
-
-      const explanationIndex =
-        headers.indexOf("WYJAŚNIENIE");
-
-      const legalIndex =
-        headers.indexOf("PODSTAWA_PRAWNA");
-
-      const imageIndex =
-        headers.indexOf("OBRAZ");
-
-
-      /* =====================================================
-         SPRAWDZENIE STRUKTURY
-         ===================================================== */
-
-      const missingColumns = [];
-
-
-      if (idIndex === -1) {
-        missingColumns.push("ID");
-      }
-
-      if (questionIndex === -1) {
-        missingColumns.push("PYTANIE");
-      }
-
-      if (answer1Index === -1) {
-        missingColumns.push("ODPOWIEDZ_1");
-      }
-
-      if (answer2Index === -1) {
-        missingColumns.push("ODPOWIEDZ_2");
-      }
-
-      if (answer3Index === -1) {
-        missingColumns.push("ODPOWIEDZ_3");
-      }
-
-      if (correctIndex === -1) {
-        missingColumns.push("POPRAWNE");
-      }
-
-
-      if (missingColumns.length) {
-
-        throw new Error(
-          "Brakuje kolumn w Excelu: " +
-          missingColumns.join(", ")
-        );
+        continue;
 
       }
 
 
-      /* =====================================================
-         BUDOWANIE BAZY PYTAŃ
-         ===================================================== */
+      const questionObject = {
 
-      const questions = [];
+        id:
+          String(id).trim(),
 
+        question:
+          String(question).trim(),
 
-      for (
-        let r = headerRowIndex + 1;
-        r < rows.length;
-        r++
-      ) {
+        answers: {
 
-        const row = rows[r];
-
-
-        if (
-          !row ||
-          row.length === 0
-        ) {
-
-          continue;
-
-        }
-
-
-        const id =
-          row[idIndex];
-
-        const question =
-          row[questionIndex];
-
-
-        if (
-          id === "" ||
-          id === null ||
-          id === undefined ||
-          question === "" ||
-          question === null ||
-          question === undefined
-        ) {
-
-          continue;
-
-        }
-
-
-       const correctRaw =
-  row[correctIndex];
-
-const correctAnswers =
-  parseCorrectAnswers(
-    correctRaw
-  );
-
-console.log(
-  "=== TEST POPRAWNYCH ODPOWIEDZI ===",
-  {
-    ID: id,
-    correctRaw: correctRaw,
-    correctRawString: String(correctRaw),
-    parsed: correctAnswers
-  }
-);
-
-        /*
-          Pytania bez poprawnej odpowiedzi
-          nie trafiają do testu.
-        */
-
-        if (
-          correctAnswers.length === 0
-        ) {
-
-          console.warn(
-            `Pytanie ID ${id} ma nieprawidłową wartość POPRAWNE:`,
-            correctRaw
-          );
-
-          continue;
-
-        }
-
-
-        const questionObject = {
-
-          id:
-            String(id).trim(),
-
-          question:
-            String(question).trim(),
-
-          answers: [
-
+          A:
             String(
               row[answer1Index] ?? ""
             ).trim(),
 
+          B:
             String(
               row[answer2Index] ?? ""
             ).trim(),
 
+          C:
             String(
               row[answer3Index] ?? ""
             ).trim()
 
-          ],
-
-          correctRaw:
-            String(
-              correctRaw
-            ).trim(),
-
-          correctAnswers:
-            correctAnswers,
-
-          explanation:
-            explanationIndex !== -1
-              ? String(
-                  row[explanationIndex] ?? ""
-                ).trim()
-              : "",
-
-          legal:
-            legalIndex !== -1
-              ? String(
-                  row[legalIndex] ?? ""
-                ).trim()
-              : "",
-
-          image:
-            imageIndex !== -1
-              ? String(
-                  row[imageIndex] ?? ""
-                ).trim()
-              : ""
-
-        };
-
-
-        questions.push(
-          questionObject
-        );
-
-      }
-
-
-      if (!questions.length) {
-
-        throw new Error(
-          "Nie znaleziono żadnych poprawnych pytań w bazie."
-        );
-
-      }
-
-
-      /* =====================================================
-         DIAGNOSTYKA CAŁEJ BAZY
-         ===================================================== */
-
-      console.table(
-
-        questions.map(q => ({
-
-          ID:
-            q.id,
-
-          POPRAWNE_W_EXCELU:
-            q.correctRaw,
-
-          POPRAWNE_WEWNĘTRZNIE:
-            q.correctAnswers,
-
-          LITERY:
-            q.correctAnswers
-              .map(
-                number =>
-                  answerNumberToLetter(
-                    number
-                  )
-              )
-              .join(" + "),
-
-          PYTANIE:
-            q.question.substring(
-              0,
-              60
-            )
-
-        }))
-
-      );
-
-
-      /* =====================================================
-         KONTROLA PYTAŃ WIELOKROTNYCH
-         ===================================================== */
-
-      console.log(
-        "PYTANIA Z WIELOMA POPRAWNYMI ODPOWIEDZIAMI:"
-      );
-
-
-      questions
-        .filter(
-          q =>
-            q.correctAnswers.length > 1
-        )
-        .forEach(q => {
-
-          console.log(
-            `ID ${q.id} | Excel: "${q.correctRaw}" | Poprawne:`,
-            q.correctAnswers,
-            "|",
-            q.correctAnswers
-              .map(
-                number =>
-                  answerNumberToLetter(
-                    number
-                  )
-              )
-              .join(" + ")
-          );
-
-        });
-
-
-      return questions;
-
-    } catch (error) {
-
-      console.error(error);
-
-      throw error;
-
-    }
-
-  }
-
-
-  /* =========================================================
-     ROZPOCZĘCIE TESTU
-     ========================================================= */
-
-  function startTest() {
-
-    testQuestions =
-      shuffle(
-        allQuestions
-      ).slice(
-        0,
-        Math.min(
-          QUESTIONS_PER_TEST,
-          allQuestions.length
-        )
-      );
-
-
-    currentQuestionIndex = 0;
-
-    correctCount = 0;
-
-
-    summaryEl.classList.add(
-      "hidden"
-    );
-
-    questionCardEl.classList.remove(
-      "hidden"
-    );
-
-
-    showQuestion();
-
-  }
-
-
-  /* =========================================================
-     WYŚWIETLENIE PYTANIA
-     ========================================================= */
-
-  function showQuestion() {
-
-    answerChecked = false;
-
-
-    const q =
-      testQuestions[
-        currentQuestionIndex
-      ];
-
-
-    counterEl.textContent =
-      `Pytanie ${currentQuestionIndex + 1} z ${testQuestions.length}`;
-
-
-    scoreInfoEl.textContent =
-      `Poprawne: ${correctCount}`;
-
-
-    questionEl.textContent =
-      q.question;
-
-
-    answersEl.innerHTML = "";
-
-
-    q.answers.forEach(
-      (answer, index) => {
-
-        if (!answer) {
-          return;
-        }
-
-
-        const label =
-          document.createElement(
-            "label"
-          );
-
-        label.className =
-          "answer";
-
-
-        const checkbox =
-          document.createElement(
-            "input"
-          );
-
-        checkbox.type =
-          "checkbox";
-
-
-        /*
-          WAŻNE:
-
-          index techniczny:
-            A = 0
-            B = 1
-            C = 2
-
-          numer odpowiedzi w logice:
-            A = 1
-            B = 2
-            C = 3
-        */
-
-        checkbox.dataset.answerNumber =
-          String(index + 1);
-
-
-        const text =
-          document.createElement(
-            "span"
-          );
-
-        text.className =
-          "answer-text";
-
-        text.textContent =
-          answer;
-
-
-        label.appendChild(
-          checkbox
-        );
-
-        label.appendChild(
-          text
-        );
-
-        answersEl.appendChild(
-          label
-        );
-
-      }
-    );
-
-
-    resultEl.className =
-      "result";
-
-    resultEl.innerHTML =
-      "";
-
-
-    explanationEl.classList.add(
-      "hidden"
-    );
-
-    explanationEl.innerHTML =
-      "";
-
-
-    legalEl.classList.add(
-      "hidden"
-    );
-
-    legalEl.textContent =
-      "";
-
-
-    questionImageEl.classList.add(
-      "hidden"
-    );
-
-    questionImageEl.removeAttribute(
-      "src"
-    );
-
-
-    if (q.image) {
-
-      questionImageEl.src =
-        q.image;
-
-      questionImageEl.classList.remove(
-        "hidden"
-      );
-
-      questionImageEl.onerror =
-        () => {
-
-          questionImageEl.classList.add(
-            "hidden"
-          );
-
-        };
-
-    }
-
-
-    checkBtn.disabled =
-      false;
-
-    checkBtn.classList.remove(
-      "hidden"
-    );
-
-
-    nextBtn.classList.add(
-      "hidden"
-    );
-
-  }
-
-
-  /* =========================================================
-     POBRANIE ZAZNACZONYCH ODPOWIEDZI
-     =========================================================
-
-     Zwracamy NUMERY 1–3:
-
-       A → 1
-       B → 2
-       C → 3
-
-     ========================================================= */
-
-  function getSelectedAnswers() {
-
-    const checked =
-      answersEl.querySelectorAll(
-        'input[type="checkbox"]:checked'
-      );
-
-
-    const selected = [];
-
-
-    checked.forEach(
-      input => {
-
-        const answerNumber =
-          Number(
-            input.dataset.answerNumber
-          );
-
-
-        if (
-          Number.isInteger(
-            answerNumber
-          ) &&
-          answerNumber >= 1 &&
-          answerNumber <= 3
-        ) {
-
-          selected.push(
-            answerNumber
-          );
-
-        }
-
-      }
-    );
-
-
-    return [
-      ...new Set(
-        selected
-      )
-    ].sort(
-      (a, b) => a - b
-    );
-
-  }
-
-
-  /* =========================================================
-     SPRAWDZANIE ODPOWIEDZI
-     ========================================================= */
-
-  function checkAnswer() {
-
-    if (answerChecked) {
-      return;
-    }
-
-
-    const q =
-      testQuestions[
-        currentQuestionIndex
-      ];
-
-
-    const selected =
-      getSelectedAnswers();
-
-
-    const correct =
-      [...q.correctAnswers]
-        .sort(
-          (a, b) => a - b
-        );
-
-
-    /*
-      Przykład:
-
-      Excel:
-      2|3
-
-      correct:
-      [2, 3]
-
-      Zaznaczone B+C:
-
-      selected:
-      [2, 3]
-
-      Wynik:
-      TRUE
-    */
-
-    const isCorrect =
-      arraysEqual(
-        selected,
-        correct
-      );
-
-
-    /*
-      Dodatkowa diagnostyka pojedynczego pytania.
-      Dzięki temu od razu widać, co aplikacja
-      faktycznie porównuje.
-    */
-
-    console.log(
-      "SPRAWDZANIE PYTANIA",
-      {
-        ID: q.id,
-        Excel: q.correctRaw,
-        poprawne: correct,
-        zaznaczone: selected,
-        wynik: isCorrect
-      }
-    );
-
-
-    if (isCorrect) {
-
-      correctCount++;
-
-
-      resultEl.className =
-        "result good";
-
-
-      resultEl.innerHTML =
-        "<strong>Poprawna odpowiedź!</strong>";
-
-    } else {
-
-      resultEl.className =
-        "result bad";
-
-
-      resultEl.innerHTML =
-        "<strong>Niepoprawna odpowiedź.</strong>";
-
-    }
-
-
-    /* =====================================================
-       OZNACZANIE ODPOWIEDZI
-       ===================================================== */
-
-    const labels =
-      answersEl.querySelectorAll(
-        ".answer"
-      );
-
-
-    labels.forEach(
-      label => {
-
-        const input =
-          label.querySelector(
-            "input"
-          );
-
-
-        const answerNumber =
-          Number(
-            input.dataset.answerNumber
-          );
-
-
-        const wasSelected =
-          selected.includes(
-            answerNumber
-          );
-
-
-        const isCorrectAnswer =
-          correct.includes(
-            answerNumber
-          );
-
-
-        label.classList.remove(
-          "correct",
-          "wrong",
-          "missed"
-        );
-
-
-        /*
-          Poprawna odpowiedź:
-          zielona.
-        */
-
-        if (
-          isCorrectAnswer
-        ) {
-
-          label.classList.add(
-            "correct"
-          );
-
-        }
-
-
-        /*
-          Zaznaczona błędna:
-          czerwona.
-        */
-
-        if (
-          wasSelected &&
-          !isCorrectAnswer
-        ) {
-
-          label.classList.remove(
-            "correct"
-          );
-
-          label.classList.add(
-            "wrong"
-          );
-
-        }
-
-
-        /*
-          Poprawna, ale niezaznaczona:
-          pomarańczowa.
-        */
-
-        if (
-          !wasSelected &&
-          isCorrectAnswer
-        ) {
-
-          label.classList.add(
-            "missed"
-          );
-
-        }
-
-
-        input.disabled =
-          true;
-
-      }
-    );
-
-
-    /* =====================================================
-       INFORMACJA O ODPOWIEDZIACH
-       ===================================================== */
-
-    const correctLetters =
-      correct
-        .map(
-          number =>
-            answerNumberToLetter(
-              number
-            )
-        )
-        .join(", ");
-
-
-    const selectedLetters =
-      selected.length
-        ? selected
-            .map(
-              number =>
-                answerNumberToLetter(
-                  number
-                )
-            )
-            .join(", ")
-        : "brak";
-
-
-    resultEl.innerHTML +=
-      `<br><br>
-       <strong>Twoje odpowiedzi:</strong> ${selectedLetters}
-       <br>
-       <strong>Prawidłowe odpowiedzi:</strong> ${correctLetters}`;
-
-
-    /* =====================================================
-       WYJAŚNIENIE
-       ===================================================== */
-
-    if (q.explanation) {
-
-      explanationEl.innerHTML =
-        `<strong>Wyjaśnienie:</strong><br>${escapeHtml(q.explanation)}`
-          .replace(
-            /\n/g,
-            "<br>"
-          );
-
-
-      explanationEl.classList.remove(
-        "hidden"
+        },
+
+        correctRaw:
+          String(
+            correctRaw ?? ""
+          ).trim(),
+
+        correctAnswers:
+          correctAnswers,
+
+        explanation:
+          explanationIndex !== -1
+            ? String(
+                row[explanationIndex] ?? ""
+              ).trim()
+            : "",
+
+        legal:
+          legalIndex !== -1
+            ? String(
+                row[legalIndex] ?? ""
+              ).trim()
+            : "",
+
+        image:
+          imageIndex !== -1
+            ? String(
+                row[imageIndex] ?? ""
+              ).trim()
+            : ""
+
+      };
+
+
+      questions.push(
+        questionObject
       );
 
     }
-
-
-    /* =====================================================
-       PODSTAWA PRAWNA
-       ===================================================== */
-
-    if (q.legal) {
-
-      legalEl.textContent =
-        q.legal;
-
-
-      legalEl.classList.remove(
-        "hidden"
-      );
-
-    }
-
-
-    checkBtn.disabled =
-      true;
-
-
-    nextBtn.classList.remove(
-      "hidden"
-    );
-
-
-    answerChecked =
-      true;
-
-
-    scoreInfoEl.textContent =
-      `Poprawne: ${correctCount}`;
-
-  }
-
-
-  /* =========================================================
-     ESCAPE HTML
-     ========================================================= */
-
-  function escapeHtml(text) {
-
-    return String(text)
-      .replace(
-        /&/g,
-        "&amp;"
-      )
-      .replace(
-        /</g,
-        "&lt;"
-      )
-      .replace(
-        />/g,
-        "&gt;"
-      )
-      .replace(
-        /"/g,
-        "&quot;"
-      )
-      .replace(
-        /'/g,
-        "&#039;"
-      );
-
-  }
-
-
-  /* =========================================================
-     NASTĘPNE PYTANIE
-     ========================================================= */
-
-  function nextQuestion() {
-
-    if (!answerChecked) {
-      return;
-    }
-
-
-    currentQuestionIndex++;
 
 
     if (
-      currentQuestionIndex >=
-      testQuestions.length
+      !questions.length
     ) {
 
-      finishTest();
-
-      return;
+      throw new Error(
+        "Nie znaleziono żadnych poprawnych pytań w bazie."
+      );
 
     }
 
 
-    showQuestion();
+    /*
+      Diagnostyka w konsoli.
+
+      Przykład ID 15 powinien tutaj być:
+
+        ID: "15"
+        POPRAWNE: "2|3"
+        POPRAWNE WEWNĘTRZNIE: "B,C"
+    */
+
+    console.table(
+
+      questions.map(q => ({
+
+        ID:
+          q.id,
+
+        POPRAWNE_W_EXCELU:
+          q.correctRaw,
+
+        POPRAWNE_WEWNĘTRZNIE:
+          q.correctAnswers.join(","),
+
+        PYTANIE:
+          q.question.substring(
+            0,
+            60
+          )
+
+      }))
+
+    );
+
+
+    return questions;
+
+  } catch (error) {
+
+    console.error(
+      "BŁĄD WCZYTYWANIA BAZY:",
+      error
+    );
+
+    throw error;
+
+  }
+
+}
+
+
+/* =========================================================
+   ROZPOCZĘCIE TESTU
+   ========================================================= */
+
+function startTest() {
+
+  testQuestions =
+    shuffle(
+      allQuestions
+    ).slice(
+      0,
+      Math.min(
+        QUESTIONS_PER_TEST,
+        allQuestions.length
+      )
+    );
+
+
+  currentQuestionIndex = 0;
+
+  correctCount = 0;
+
+
+  summaryEl.classList.add(
+    "hidden"
+  );
+
+  questionCardEl.classList.remove(
+    "hidden"
+  );
+
+
+  showQuestion();
+}
+
+
+/* =========================================================
+   WYŚWIETLENIE PYTANIA
+   ========================================================= */
+
+function showQuestion() {
+
+  answerChecked = false;
+
+
+  const q =
+    testQuestions[
+      currentQuestionIndex
+    ];
+
+
+  counterEl.textContent =
+    `Pytanie ${currentQuestionIndex + 1} z ${testQuestions.length}`;
+
+
+  scoreInfoEl.textContent =
+    `Poprawne: ${correctCount}`;
+
+
+  questionEl.textContent =
+    q.question;
+
+
+  answersEl.innerHTML =
+    "";
+
+
+  /*
+    ZAWSZE tworzymy trzy niezależne checkboxy.
+
+    A = checkbox A
+    B = checkbox B
+    C = checkbox C
+
+    Nie ma tutaj żadnych indeksów 0/1/2.
+  */
+
+  ANSWER_LETTERS.forEach(
+    letter => {
+
+      const answer =
+        q.answers[letter];
+
+
+      if (!answer) {
+        return;
+      }
+
+
+      const label =
+        document.createElement(
+          "label"
+        );
+
+      label.className =
+        "answer";
+
+
+      const checkbox =
+        document.createElement(
+          "input"
+        );
+
+      checkbox.type =
+        "checkbox";
+
+      checkbox.dataset.answer =
+        letter;
+
+
+      const text =
+        document.createElement(
+          "span"
+        );
+
+      text.className =
+        "answer-text";
+
+      text.textContent =
+        answer;
+
+
+      label.appendChild(
+        checkbox
+      );
+
+      label.appendChild(
+        text
+      );
+
+
+      /*
+        Kliknięcie w cały tekst również
+        zaznacza checkbox, ponieważ label
+        zawiera input.
+      */
+
+      answersEl.appendChild(
+        label
+      );
+
+    }
+  );
+
+
+  resultEl.className =
+    "result";
+
+  resultEl.innerHTML =
+    "";
+
+
+  explanationEl.classList.add(
+    "hidden"
+  );
+
+  explanationEl.innerHTML =
+    "";
+
+
+  legalEl.classList.add(
+    "hidden"
+  );
+
+  legalEl.textContent =
+    "";
+
+
+  questionImageEl.classList.add(
+    "hidden"
+  );
+
+  questionImageEl.removeAttribute(
+    "src"
+  );
+
+
+  if (q.image) {
+
+    questionImageEl.src =
+      q.image;
+
+    questionImageEl.classList.remove(
+      "hidden"
+    );
+
+    questionImageEl.onerror =
+      () => {
+
+        questionImageEl.classList.add(
+          "hidden"
+        );
+
+      };
 
   }
 
 
-  /* =========================================================
-     KONIEC TESTU
-     ========================================================= */
+  checkBtn.disabled =
+    false;
 
-  function finishTest() {
+  checkBtn.classList.remove(
+    "hidden"
+  );
 
-    questionCardEl.classList.add(
-      "hidden"
+
+  nextBtn.classList.add(
+    "hidden"
+  );
+
+}
+
+
+/* =========================================================
+   POBRANIE ZAZNACZONYCH ODPOWIEDZI
+   ========================================================= */
+
+function getSelectedAnswers() {
+
+  const checked =
+    answersEl.querySelectorAll(
+      'input[type="checkbox"]:checked'
     );
 
-    summaryEl.classList.remove(
-      "hidden"
+
+  const selected = [];
+
+
+  checked.forEach(
+    input => {
+
+      const letter =
+        input.dataset.answer;
+
+
+      if (
+        ANSWER_LETTERS.includes(
+          letter
+        )
+      ) {
+
+        selected.push(
+          letter
+        );
+
+      }
+
+    }
+  );
+
+
+  return [
+    ...new Set(
+      selected
+    )
+  ].sort();
+
+}
+
+
+/* =========================================================
+   SPRAWDZANIE ODPOWIEDZI
+   ========================================================= */
+
+function checkAnswer() {
+
+  if (answerChecked) {
+    return;
+  }
+
+
+  const q =
+    testQuestions[
+      currentQuestionIndex
+    ];
+
+
+  /*
+    Przykład:
+
+      POPRAWNE w Excelu:
+      2|3
+
+      q.correctAnswers:
+      ["B", "C"]
+
+      Jeżeli użytkowniczka zaznaczy B i C:
+
+      selected:
+      ["B", "C"]
+
+      Wynik:
+      TRUE
+  */
+
+  const selected =
+    getSelectedAnswers();
+
+
+  const correct =
+    [...q.correctAnswers]
+      .sort();
+
+
+  const isCorrect =
+    arraysEqual(
+      selected,
+      correct
     );
 
 
-    finalScoreEl.textContent =
-      `${correctCount} / ${testQuestions.length}`;
+  if (isCorrect) {
+
+    correctCount++;
 
 
-    saveStats();
+    resultEl.className =
+      "result good";
+
+
+    resultEl.innerHTML =
+      "<strong>Poprawna odpowiedź!</strong>";
+
+  } else {
+
+    resultEl.className =
+      "result bad";
+
+
+    resultEl.innerHTML =
+      "<strong>Niepoprawna odpowiedź.</strong>";
 
   }
 
 
-  /* =========================================================
-     STATYSTYKI
-     ========================================================= */
+  /* =====================================================
+     OZNACZANIE ODPOWIEDZI
+     ===================================================== */
 
-  function saveStats() {
+  const labels =
+    answersEl.querySelectorAll(
+      ".answer"
+    );
 
-    try {
 
-      const previous =
-        JSON.parse(
-          localStorage.getItem(
-            "instruktor_stats"
-          ) || "{}"
+  labels.forEach(
+    label => {
+
+      const input =
+        label.querySelector(
+          "input"
         );
 
 
-      previous.tests =
-        Number(
-          previous.tests || 0
-        ) + 1;
+      const letter =
+        input.dataset.answer;
 
 
-      previous.questions =
-        Number(
-          previous.questions || 0
-        ) + testQuestions.length;
+      const wasSelected =
+        selected.includes(
+          letter
+        );
 
 
-      previous.correct =
-        Number(
-          previous.correct || 0
-        ) + correctCount;
+      const isCorrectAnswer =
+        correct.includes(
+          letter
+        );
 
 
-      localStorage.setItem(
-        "instruktor_stats",
-        JSON.stringify(
-          previous
-        )
+      label.classList.remove(
+        "correct",
+        "wrong",
+        "missed"
       );
 
-    } catch (error) {
 
-      console.warn(
-        "Nie udało się zapisać statystyk:",
-        error
-      );
+      /*
+        Poprawna odpowiedź = zielona.
+      */
+
+      if (
+        isCorrectAnswer
+      ) {
+
+        label.classList.add(
+          "correct"
+        );
+
+      }
+
+
+      /*
+        Zaznaczona błędna = czerwona.
+      */
+
+      if (
+        wasSelected &&
+        !isCorrectAnswer
+      ) {
+
+        label.classList.remove(
+          "correct"
+        );
+
+        label.classList.add(
+          "wrong"
+        );
+
+      }
+
+
+      /*
+        Poprawna, ale niezaznaczona
+        = pomarańczowa.
+      */
+
+      if (
+        !wasSelected &&
+        isCorrectAnswer
+      ) {
+
+        label.classList.add(
+          "missed"
+        );
+
+      }
+
+
+      input.disabled =
+        true;
 
     }
+  );
+
+
+  /* =====================================================
+     INFORMACJA O ODPOWIEDZIACH
+     ===================================================== */
+
+  const selectedLetters =
+    selected.length
+      ? selected.join(", ")
+      : "brak";
+
+
+  const correctLetters =
+    correct.join(", ");
+
+
+  resultEl.innerHTML +=
+    `<br><br>
+     <strong>Twoje odpowiedzi:</strong>
+     ${selectedLetters}
+     <br>
+     <strong>Prawidłowe odpowiedzi:</strong>
+     ${correctLetters}`;
+
+
+  /* =====================================================
+     WYJAŚNIENIE
+     ===================================================== */
+
+  if (q.explanation) {
+
+    explanationEl.innerHTML =
+      `<strong>Wyjaśnienie:</strong><br>${escapeHtml(q.explanation)}`
+        .replace(
+          /\n/g,
+          "<br>"
+        );
+
+
+    explanationEl.classList.remove(
+      "hidden"
+    );
 
   }
 
 
-  /* =========================================================
-     PRZYCISKI
-     ========================================================= */
+  /* =====================================================
+     PODSTAWA PRAWNA
+     ===================================================== */
 
-  checkBtn.addEventListener(
-    "click",
-    checkAnswer
-  );
+  if (q.legal) {
 
-
-  nextBtn.addEventListener(
-    "click",
-    nextQuestion
-  );
+    legalEl.textContent =
+      q.legal;
 
 
-  restartBtn.addEventListener(
-    "click",
-    startTest
-  );
-
-
-  /* =========================================================
-     START APLIKACJI
-     ========================================================= */
-
-  async function init() {
-
-    try {
-
-      allQuestions =
-        await loadExcel();
-
-
-      loadingEl.classList.add(
-        "hidden"
-      );
-
-
-      appEl.classList.remove(
-        "hidden"
-      );
-
-
-      startTest();
-
-    } catch (error) {
-
-      loadingEl.classList.add(
-        "hidden"
-      );
-
-
-      errorEl.classList.remove(
-        "hidden"
-      );
-
-
-      errorEl.textContent =
-        "Nie udało się uruchomić bazy pytań.\n\n" +
-        error.message;
-
-    }
+    legalEl.classList.remove(
+      "hidden"
+    );
 
   }
 
 
-  init();
+  checkBtn.disabled =
+    true;
+
+
+  nextBtn.classList.remove(
+    "hidden"
+  );
+
+
+  answerChecked =
+    true;
+
+
+  scoreInfoEl.textContent =
+    `Poprawne: ${correctCount}`;
+
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+   ========================================================= */
+
+function escapeHtml(text) {
+
+  return String(text)
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+/* =========================================================
+   NASTĘPNE PYTANIE
+   ========================================================= */
+
+function nextQuestion() {
+
+  if (!answerChecked) {
+    return;
+  }
+
+
+  currentQuestionIndex++;
+
+
+  if (
+    currentQuestionIndex >=
+    testQuestions.length
+  ) {
+
+    finishTest();
+
+    return;
+
+  }
+
+
+  showQuestion();
+
+}
+
+
+/* =========================================================
+   KONIEC TESTU
+   ========================================================= */
+
+function finishTest() {
+
+  questionCardEl.classList.add(
+    "hidden"
+  );
+
+  summaryEl.classList.remove(
+    "hidden"
+  );
+
+
+  finalScoreEl.textContent =
+    `${correctCount} / ${testQuestions.length}`;
+
+
+  saveStats();
+
+}
+
+
+/* =========================================================
+   STATYSTYKI
+   ========================================================= */
+
+function saveStats() {
+
+  try {
+
+    const previous =
+      JSON.parse(
+        localStorage.getItem(
+          "instruktor_stats"
+        ) || "{}"
+      );
+
+
+    previous.tests =
+      Number(
+        previous.tests || 0
+      ) + 1;
+
+
+    previous.questions =
+      Number(
+        previous.questions || 0
+      ) + testQuestions.length;
+
+
+    previous.correct =
+      Number(
+        previous.correct || 0
+      ) + correctCount;
+
+
+    localStorage.setItem(
+      "instruktor_stats",
+      JSON.stringify(
+        previous
+      )
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "Nie udało się zapisać statystyk:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   PRZYCISKI
+   ========================================================= */
+
+checkBtn.addEventListener(
+  "click",
+  checkAnswer
+);
+
+
+nextBtn.addEventListener(
+  "click",
+  nextQuestion
+);
+
+
+restartBtn.addEventListener(
+  "click",
+  startTest
+);
+
+
+/* =========================================================
+   START APLIKACJI
+   ========================================================= */
+
+async function init() {
+
+  try {
+
+    allQuestions =
+      await loadExcel();
+
+
+    loadingEl.classList.add(
+      "hidden"
+    );
+
+
+    appEl.classList.remove(
+      "hidden"
+    );
+
+
+    startTest();
+
+  } catch (error) {
+
+    loadingEl.classList.add(
+      "hidden"
+    );
+
+
+    errorEl.classList.remove(
+      "hidden"
+    );
+
+
+    errorEl.textContent =
+      "Nie udało się uruchomić bazy pytań.\n\n" +
+      error.message;
+
+  }
+
+}
+
+
+init();
 
 </script>
 
