@@ -8,8 +8,6 @@
   <meta name="description" content="Testy dla kandydatów na instruktorów nauki jazdy">
   <title>Kurs instruktora — Testy</title>
 
-  <!-- Biblioteka do odczytu plików Excel -->
-
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
@@ -362,7 +360,6 @@
 <body>
   <main class="app">
 
-```
 <header>
   <div class="brand">Kurs instruktora</div>
   <h1>Testy</h1>
@@ -407,6 +404,12 @@
 
     <div id="answers" class="answers"></div>
 
+    <!-- OBRAZ PRZED ZATWIERDZENIEM -->
+    <div id="preImageBox" class="image-box">
+      <div class="info-label">Ilustracja</div>
+      <img id="preQuestionImage" src="" alt="Ilustracja do pytania">
+    </div>
+
     <div class="actions">
       <button id="confirmButton" class="btn btn-primary">
         Zatwierdź odpowiedź
@@ -430,9 +433,10 @@
         <div id="legalBasis" class="info-content"></div>
       </div>
 
-      <div id="imageBox" class="image-box">
+      <!-- OBRAZ PO ZATWIERDZENIU -->
+      <div id="postImageBox" class="image-box">
         <div class="info-label">Ilustracja</div>
-        <img id="questionImage" src="" alt="Ilustracja do pytania">
+        <img id="postQuestionImage" src="" alt="Ilustracja do pytania">
       </div>
 
       <div class="actions">
@@ -444,23 +448,20 @@
     </div>
   </div>
 </section>
-```
 
   </main>
 
   <script>
+
     // ============================================================
     // KONFIGURACJA
     // ============================================================
 
     const EXCEL_FILE = "Baza_danych.xlsx";
 
-    // Liczba pytań w jednym teście.
     const QUESTIONS_PER_TEST = 20;
 
-    // Wersja aplikacji.
-    // Zmieniana tylko przy większych zmianach kodu.
-    const APP_VERSION = "2026-09-21-3";
+    const APP_VERSION = "2026-09-21-4";
 
 
     // ============================================================
@@ -478,41 +479,99 @@
     // ELEMENTY HTML
     // ============================================================
 
-    const startScreen = document.getElementById("startScreen");
-    const testScreen = document.getElementById("testScreen");
+    const startScreen =
+      document.getElementById("startScreen");
 
-    const startButton = document.getElementById("startButton");
-    const confirmButton = document.getElementById("confirmButton");
-    const nextButton = document.getElementById("nextButton");
+    const testScreen =
+      document.getElementById("testScreen");
 
-    const loadStatus = document.getElementById("loadStatus");
+    const startButton =
+      document.getElementById("startButton");
 
-    const questionCounter = document.getElementById("questionCounter");
-    const questionId = document.getElementById("questionId");
-    const questionNumber = document.getElementById("questionNumber");
-    const questionText = document.getElementById("questionText");
-    const answersContainer = document.getElementById("answers");
-    const progressFill = document.getElementById("progressFill");
+    const confirmButton =
+      document.getElementById("confirmButton");
 
-    const result = document.getElementById("result");
-    const resultTitle = document.getElementById("resultTitle");
-    const solutionList = document.getElementById("solutionList");
-    const explanation = document.getElementById("explanation");
-    const legalBasis = document.getElementById("legalBasis");
+    const nextButton =
+      document.getElementById("nextButton");
 
-    const imageBox = document.getElementById("imageBox");
-    const questionImage = document.getElementById("questionImage");
+    const loadStatus =
+      document.getElementById("loadStatus");
+
+    const questionCounter =
+      document.getElementById("questionCounter");
+
+    const questionId =
+      document.getElementById("questionId");
+
+    const questionNumber =
+      document.getElementById("questionNumber");
+
+    const questionText =
+      document.getElementById("questionText");
+
+    const answersContainer =
+      document.getElementById("answers");
+
+    const progressFill =
+      document.getElementById("progressFill");
+
+    const result =
+      document.getElementById("result");
+
+    const resultTitle =
+      document.getElementById("resultTitle");
+
+    const solutionList =
+      document.getElementById("solutionList");
+
+    const explanation =
+      document.getElementById("explanation");
+
+    const legalBasis =
+      document.getElementById("legalBasis");
+
+
+    // Obraz PRZED zatwierdzeniem
+
+    const preImageBox =
+      document.getElementById("preImageBox");
+
+    const preQuestionImage =
+      document.getElementById("preQuestionImage");
+
+
+    // Obraz PO zatwierdzeniu
+
+    const postImageBox =
+      document.getElementById("postImageBox");
+
+    const postQuestionImage =
+      document.getElementById("postQuestionImage");
 
 
     // ============================================================
     // START APLIKACJI
     // ============================================================
 
-    document.addEventListener("DOMContentLoaded", loadExcelDatabase);
+    document.addEventListener(
+      "DOMContentLoaded",
+      loadExcelDatabase
+    );
 
-    startButton.addEventListener("click", startTest);
-    confirmButton.addEventListener("click", confirmAnswer);
-    nextButton.addEventListener("click", showNextQuestion);
+    startButton.addEventListener(
+      "click",
+      startTest
+    );
+
+    confirmButton.addEventListener(
+      "click",
+      confirmAnswer
+    );
+
+    nextButton.addEventListener(
+      "click",
+      showNextQuestion
+    );
 
 
     // ============================================================
@@ -523,61 +582,66 @@
 
       try {
 
-        /*
-         * Dodajemy znacznik czasu do adresu pliku.
-         * Dzięki temu przeglądarka nie powinna podawać starej
-         * wersji Baza_danych.xlsx z pamięci podręcznej.
-         */
-        const cacheBuster = `?v=${Date.now()}`;
+        const cacheBuster =
+          `?v=${Date.now()}`;
 
-        const response = await fetch(
-          `${EXCEL_FILE}${cacheBuster}`,
-          {
-            cache: "no-store"
-          }
-        );
+        const response =
+          await fetch(
+            `${EXCEL_FILE}${cacheBuster}`,
+            {
+              cache: "no-store"
+            }
+          );
 
         if (!response.ok) {
+
           throw new Error(
             `Nie udało się znaleźć pliku ${EXCEL_FILE}.`
           );
         }
 
-        const arrayBuffer = await response.arrayBuffer();
+        const arrayBuffer =
+          await response.arrayBuffer();
 
-        const workbook = XLSX.read(arrayBuffer, {
-          type: "array"
-        });
+        const workbook =
+          XLSX.read(
+            arrayBuffer,
+            {
+              type: "array"
+            }
+          );
 
         if (!workbook.SheetNames.length) {
+
           throw new Error(
             "Plik Excel nie zawiera żadnego arkusza."
           );
         }
 
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
+        const sheetName =
+          workbook.SheetNames[0];
 
-        /*
-         * Czytamy Excel jako tablicę wierszy zamiast polegać
-         * na dokładnym zapisie nazw nagłówków przez SheetJS.
-         * Dzięki temu możemy je znormalizować.
-         */
-        const rows = XLSX.utils.sheet_to_json(
-          worksheet,
-          {
-            header: 1,
-            defval: ""
-          }
-        );
+        const worksheet =
+          workbook.Sheets[sheetName];
+
+        const rows =
+          XLSX.utils.sheet_to_json(
+            worksheet,
+            {
+              header: 1,
+              defval: ""
+            }
+          );
 
         if (!rows.length) {
+
           throw new Error(
             "Arkusz Excel jest pusty."
           );
         }
 
-        const rawHeaders = rows[0];
+        const rawHeaders =
+          rows[0];
 
         const headerIndex = {};
 
@@ -588,27 +652,46 @@
               normalizeHeader(header);
 
             if (normalized) {
-              headerIndex[normalized] = index;
+
+              headerIndex[normalized] =
+                index;
             }
           }
         );
 
-        /*
-         * Nowa struktura bazy danych.
-         */
+
+        // ========================================================
+        // NOWA STRUKTURA BAZY
+        // ========================================================
+
         const requiredColumns = [
+
           "ID",
+
           "PYTANIE",
+
           "ODPOWIEDZ_A",
+
           "ODPOWIEDZ_B",
+
           "ODPOWIEDZ_C",
+
           "POPRAWNA_A",
+
           "POPRAWNA_B",
+
           "POPRAWNA_C",
+
           "WYJAŚNIENIE",
+
           "PODSTAWA_PRAWNA",
-          "OBRAZ"
+
+          "OBRAZ",
+
+          "MOMENT_OBRAZU"
+
         ];
+
 
         const missingColumns =
           requiredColumns.filter(
@@ -616,45 +699,53 @@
               headerIndex[column] === undefined
           );
 
+
         if (missingColumns.length) {
+
           throw new Error(
             `Brakuje kolumn w Excelu: ${missingColumns.join(", ")}`
           );
         }
 
-        /*
-         * Pomijamy pierwszy wiersz, ponieważ zawiera nagłówki.
-         */
-        allQuestions = rows
-          .slice(1)
-          .map(
-            row =>
-              normalizeQuestion(
-                row,
-                headerIndex
-              )
-          )
-          .filter(
-            question =>
-              question.question
-          );
+
+        // ========================================================
+        // ODCZYT PYTAŃ
+        // ========================================================
+
+        allQuestions =
+          rows
+            .slice(1)
+            .map(
+              row =>
+                normalizeQuestion(
+                  row,
+                  headerIndex
+                )
+            )
+            .filter(
+              question =>
+                question.question
+            );
+
 
         if (!allQuestions.length) {
+
           throw new Error(
             "Excel został odczytany, ale nie znaleziono żadnych pytań."
           );
         }
 
-        /*
-         * Kontrola logiczna bazy:
-         * każde pytanie powinno mieć przynajmniej jedną
-         * prawidłową odpowiedź.
-         */
+
+        // ========================================================
+        // KONTROLA POPRAWNYCH ODPOWIEDZI
+        // ========================================================
+
         const invalidQuestions =
           allQuestions.filter(
             question =>
               question.correctAnswers.length === 0
           );
+
 
         if (invalidQuestions.length) {
 
@@ -663,10 +754,44 @@
           );
         }
 
+
+        // ========================================================
+        // KONTROLA MOMENT_OBRAZU
+        // ========================================================
+
+        const invalidImageMoments =
+          allQuestions.filter(
+            question =>
+              question.image &&
+              question.imageMoment !== "" &&
+              question.imageMoment !== "PRZED" &&
+              question.imageMoment !== "PO"
+          );
+
+
+        if (invalidImageMoments.length) {
+
+          const examples =
+            invalidImageMoments
+              .slice(0, 5)
+              .map(
+                question =>
+                  `${question.id || "brak ID"}: "${question.imageMoment}"`
+              )
+              .join(", ");
+
+
+          throw new Error(
+            `Nieprawidłowa wartość MOMENT_OBRAZU. Dozwolone są tylko PRZED, PO lub pusta komórka. Błędne rekordy: ${examples}`
+          );
+        }
+
+
         loadStatus.textContent =
           `Załadowano ${allQuestions.length} pytań.`;
 
         startButton.disabled = false;
+
 
       } catch (error) {
 
@@ -692,6 +817,7 @@
         value === null ||
         value === undefined
       ) {
+
         return "";
       }
 
@@ -716,6 +842,7 @@
         headerIndex[headerName];
 
       if (index === undefined) {
+
         return "";
       }
 
@@ -726,7 +853,7 @@
     // ============================================================
     // NORMALIZACJA WIERSZA EXCELA
     //
-    // NOWA BAZA:
+    // STRUKTURA:
     //
     // ID
     // PYTANIE
@@ -739,6 +866,7 @@
     // WYJAŚNIENIE
     // PODSTAWA_PRAWNA
     // OBRAZ
+    // MOMENT_OBRAZU
     // ============================================================
 
     function normalizeQuestion(
@@ -748,10 +876,11 @@
 
       const correctAnswers = [];
 
-      /*
-       * Każda kolumna poprawności odpowiada
-       * bezpośrednio jednej literze.
-       */
+
+      // ========================================================
+      // POPRAWNA A
+      // ========================================================
+
       if (
         isCorrectFlag(
           getCell(
@@ -761,8 +890,14 @@
           )
         )
       ) {
+
         correctAnswers.push("A");
       }
+
+
+      // ========================================================
+      // POPRAWNA B
+      // ========================================================
 
       if (
         isCorrectFlag(
@@ -773,8 +908,14 @@
           )
         )
       ) {
+
         correctAnswers.push("B");
       }
+
+
+      // ========================================================
+      // POPRAWNA C
+      // ========================================================
 
       if (
         isCorrectFlag(
@@ -785,91 +926,124 @@
           )
         )
       ) {
+
         correctAnswers.push("C");
       }
 
+
+      // ========================================================
+      // MOMENT OBRAZU
+      // ========================================================
+
+      const imageMoment =
+        String(
+          getCell(
+            row,
+            headerIndex,
+            "MOMENT_OBRAZU"
+          )
+        )
+          .trim()
+          .toUpperCase();
+
+
+      // ========================================================
+      // ZWRACAMY PYTANIE
+      // ========================================================
+
       return {
 
-        id: String(
-          getCell(
-            row,
-            headerIndex,
-            "ID"
-          )
-        ).trim(),
+        id:
+          String(
+            getCell(
+              row,
+              headerIndex,
+              "ID"
+            )
+          ).trim(),
 
-        question: String(
-          getCell(
-            row,
-            headerIndex,
-            "PYTANIE"
-          )
-        ).trim(),
+
+        question:
+          String(
+            getCell(
+              row,
+              headerIndex,
+              "PYTANIE"
+            )
+          ).trim(),
+
 
         answers: {
-          A: String(
-            getCell(
-              row,
-              headerIndex,
-              "ODPOWIEDZ_A"
-            )
-          ).trim(),
 
-          B: String(
-            getCell(
-              row,
-              headerIndex,
-              "ODPOWIEDZ_B"
-            )
-          ).trim(),
+          A:
+            String(
+              getCell(
+                row,
+                headerIndex,
+                "ODPOWIEDZ_A"
+              )
+            ).trim(),
 
-          C: String(
-            getCell(
-              row,
-              headerIndex,
-              "ODPOWIEDZ_C"
-            )
-          ).trim()
+          B:
+            String(
+              getCell(
+                row,
+                headerIndex,
+                "ODPOWIEDZ_B"
+              )
+            ).trim(),
+
+          C:
+            String(
+              getCell(
+                row,
+                headerIndex,
+                "ODPOWIEDZ_C"
+              )
+            ).trim()
         },
+
 
         correctAnswers,
 
-        explanation: String(
-          getCell(
-            row,
-            headerIndex,
-            "WYJAŚNIENIE"
-          )
-        ).trim(),
 
-        legalBasis: String(
-          getCell(
-            row,
-            headerIndex,
-            "PODSTAWA_PRAWNA"
-          )
-        ).trim(),
+        explanation:
+          String(
+            getCell(
+              row,
+              headerIndex,
+              "WYJAŚNIENIE"
+            )
+          ).trim(),
 
-        image: String(
-          getCell(
-            row,
-            headerIndex,
-            "OBRAZ"
-          )
-        ).trim()
+
+        legalBasis:
+          String(
+            getCell(
+              row,
+              headerIndex,
+              "PODSTAWA_PRAWNA"
+            )
+          ).trim(),
+
+
+        image:
+          String(
+            getCell(
+              row,
+              headerIndex,
+              "OBRAZ"
+            )
+          ).trim(),
+
+
+        imageMoment
       };
     }
 
 
     // ============================================================
     // ODCZYT FLAGI 0/1
-    //
-    // Podstawowa wersja bazy:
-    // 1 = prawidłowa
-    // 0 = nieprawidłowa
-    //
-    // Obsługujemy też kilka bezpiecznych wariantów tekstowych,
-    // gdyby Excel kiedyś przechowywał wartość jako tekst.
     // ============================================================
 
     function isCorrectFlag(value) {
@@ -878,6 +1052,7 @@
         value === null ||
         value === undefined
       ) {
+
         return false;
       }
 
@@ -887,11 +1062,17 @@
           .toUpperCase();
 
       return (
+
         normalized === "1" ||
+
         normalized === "TRUE" ||
+
         normalized === "PRAWDA" ||
+
         normalized === "TAK" ||
+
         normalized === "YES" ||
+
         normalized === "X"
       );
     }
@@ -904,22 +1085,17 @@
     function startTest() {
 
       if (!allQuestions.length) {
+
         return;
       }
 
-      /*
-       * Tworzymy kopię bazy, żeby shuffle() nie zmienił
-       * kolejności allQuestions.
-       */
-      const pool = [...allQuestions];
+
+      const pool =
+        [...allQuestions];
 
       shuffle(pool);
 
-      /*
-       * Każdy test ma maksymalnie 20 pytań.
-       * Jeżeli baza miałaby mniej niż 20 pytań,
-       * test wykorzysta wszystkie dostępne.
-       */
+
       testQuestions =
         pool.slice(
           0,
@@ -929,10 +1105,18 @@
           )
         );
 
+
       currentQuestionIndex = 0;
 
-      startScreen.classList.remove("active");
-      testScreen.classList.add("active");
+
+      startScreen.classList.remove(
+        "active"
+      );
+
+      testScreen.classList.add(
+        "active"
+      );
+
 
       showQuestion();
     }
@@ -949,25 +1133,35 @@
           currentQuestionIndex
         ];
 
+
       selectedAnswers = [];
 
-      result.classList.remove("visible");
+
+      result.classList.remove(
+        "visible"
+      );
+
 
       confirmButton.disabled = false;
 
+
       questionCounter.textContent =
         `Pytanie ${currentQuestionIndex + 1} z ${testQuestions.length}`;
+
 
       questionId.textContent =
         currentQuestion.id
           ? `ID: ${currentQuestion.id}`
           : "";
 
+
       questionNumber.textContent =
         `Pytanie ${currentQuestionIndex + 1}`;
 
+
       questionText.textContent =
         currentQuestion.question;
+
 
       progressFill.style.width =
         `${
@@ -977,13 +1171,42 @@
           ) * 100
         }%`;
 
-      /*
-       * Czyścimy stan obrazka z poprzedniego pytania.
-       */
-      imageBox.classList.remove("visible");
-      questionImage.removeAttribute("src");
+
+      // ========================================================
+      // CZYŚCIMY OBRAZY Z POPRZEDNIEGO PYTANIA
+      // ========================================================
+
+      hideImage(
+        preImageBox,
+        preQuestionImage
+      );
+
+      hideImage(
+        postImageBox,
+        postQuestionImage
+      );
+
 
       renderAnswers();
+
+
+      // ========================================================
+      // JEŻELI MOMENT_OBRAZU = PRZED
+      // POKAZUJEMY OBRAZ OD RAZU
+      // ========================================================
+
+      if (
+        currentQuestion.image &&
+        currentQuestion.imageMoment === "PRZED"
+      ) {
+
+        showImage(
+          preImageBox,
+          preQuestionImage,
+          currentQuestion.image
+        );
+      }
+
 
       window.scrollTo({
         top: 0,
@@ -1000,15 +1223,13 @@
 
       answersContainer.innerHTML = "";
 
-      /*
-       * Kolejność odpowiedzi pozostaje A, B, C.
-       * Nie mieszamy odpowiedzi niezależnie od pytania.
-       */
+
       const answerLetters = [
         "A",
         "B",
         "C"
       ];
+
 
       answerLetters.forEach(
         letter => {
@@ -1016,22 +1237,25 @@
           const answer =
             currentQuestion.answers[letter];
 
-          /*
-           * Pomijamy pustą odpowiedź.
-           */
+
           if (!answer) {
+
             return;
           }
+
 
           const wrapper =
             document.createElement("div");
 
-          wrapper.className = "answer";
+          wrapper.className =
+            "answer";
+
 
           const input =
             document.createElement("input");
 
-          input.type = "checkbox";
+          input.type =
+            "checkbox";
 
           input.id =
             `answer-${letter}`;
@@ -1039,16 +1263,19 @@
           input.value =
             letter;
 
+
           input.addEventListener(
             "change",
             handleAnswerSelection
           );
+
 
           const label =
             document.createElement("label");
 
           label.htmlFor =
             input.id;
+
 
           const answerLetter =
             document.createElement("span");
@@ -1059,6 +1286,7 @@
           answerLetter.textContent =
             letter;
 
+
           const text =
             document.createElement("span");
 
@@ -1068,6 +1296,7 @@
           text.textContent =
             answer;
 
+
           label.appendChild(
             answerLetter
           );
@@ -1076,6 +1305,7 @@
             text
           );
 
+
           wrapper.appendChild(
             input
           );
@@ -1083,6 +1313,7 @@
           wrapper.appendChild(
             label
           );
+
 
           answersContainer.appendChild(
             wrapper
@@ -1101,11 +1332,13 @@
       const letter =
         event.target.value;
 
+
       if (event.target.checked) {
 
         if (
           !selectedAnswers.includes(letter)
         ) {
+
           selectedAnswers.push(letter);
         }
 
@@ -1117,6 +1350,7 @@
               selected !== letter
           );
       }
+
 
       selectedAnswers.sort();
     }
@@ -1139,43 +1373,35 @@
         return;
       }
 
+
       const correctAnswers =
         [...currentQuestion.correctAnswers]
           .sort();
+
 
       const selected =
         [...selectedAnswers]
           .sort();
 
-      /*
-       * Prawidłowa odpowiedź musi być identycznym
-       * zestawem liter jak odpowiedź użytkownika.
-       *
-       * A + C = A + C
-       * B + C = B + C
-       * A + B + C = A + B + C
-       *
-       * Samo trafienie jednej z kilku odpowiedzi
-       * nie wystarcza.
-       */
+
       const correct =
         arraysEqual(
           selected,
           correctAnswers
         );
 
+
       showResult(correct);
+
 
       saveAnswerStatistic(
         currentQuestion.id,
         correct
       );
 
-      /*
-       * Nie można już zmieniać odpowiedzi
-       * po zatwierdzeniu.
-       */
+
       disableAnswerInputs();
+
 
       confirmButton.disabled = true;
     }
@@ -1192,8 +1418,10 @@
           "input"
         );
 
+
       inputs.forEach(
         input => {
+
           input.disabled = true;
         }
       );
@@ -1206,12 +1434,16 @@
 
     function showResult(isCorrect) {
 
-      result.classList.add("visible");
+      result.classList.add(
+        "visible"
+      );
+
 
       resultTitle.textContent =
         isCorrect
           ? "✓ Poprawna odpowiedź"
           : "✕ Niepoprawna odpowiedź";
+
 
       resultTitle.className =
         `result-title ${
@@ -1220,50 +1452,54 @@
             : "wrong"
         }`;
 
+
       solutionList.innerHTML = "";
 
+
       const selected =
-        new Set(selectedAnswers);
+        new Set(
+          selectedAnswers
+        );
+
 
       const correct =
         new Set(
           currentQuestion.correctAnswers
         );
 
-      /*
-       * Pokazujemy każdą odpowiedź oraz jej status.
-       *
-       * Zielony:
-       * odpowiedź prawidłowa.
-       *
-       * Czerwony:
-       * użytkownik zaznaczył odpowiedź błędną.
-       *
-       * Pomarańczowy:
-       * odpowiedź była prawidłowa, ale użytkownik
-       * jej nie zaznaczył.
-       */
-      ["A", "B", "C"].forEach(
+
+      [
+        "A",
+        "B",
+        "C"
+      ].forEach(
         letter => {
 
           const answer =
             currentQuestion.answers[letter];
 
+
           if (!answer) {
+
             return;
           }
+
 
           const item =
             document.createElement("div");
 
+
           item.className =
             "solution-item";
+
 
           const isCorrectAnswer =
             correct.has(letter);
 
+
           const wasSelected =
             selected.has(letter);
+
 
           if (
             isCorrectAnswer &&
@@ -1274,8 +1510,10 @@
               "correct-answer"
             );
 
+
             item.innerHTML =
               `<strong>✓ Prawidłowa:</strong> ${escapeHtml(answer)}`;
+
 
           } else if (
             !isCorrectAnswer &&
@@ -1286,8 +1524,10 @@
               "selected-wrong"
             );
 
+
             item.innerHTML =
               `<strong>✕ Zaznaczona, ale nieprawidłowa:</strong> ${escapeHtml(answer)}`;
+
 
           } else if (
             isCorrectAnswer &&
@@ -1298,8 +1538,10 @@
               "correct-missed"
             );
 
+
             item.innerHTML =
               `<strong>✓ Prawidłowa — niezaznaczona:</strong> ${escapeHtml(answer)}`;
+
 
           } else {
 
@@ -1307,27 +1549,54 @@
               `<strong>Nieprawidłowa:</strong> ${escapeHtml(answer)}`;
           }
 
-          solutionList.appendChild(item);
+
+          solutionList.appendChild(
+            item
+          );
         }
       );
 
-      /*
-       * Wyjaśnienie pochodzi bezpośrednio
-       * z kolumny WYJAŚNIENIE.
-       */
+
+      // ========================================================
+      // WYJAŚNIENIE
+      // ========================================================
+
       explanation.textContent =
         currentQuestion.explanation ||
         "Brak wyjaśnienia w bazie.";
 
-      /*
-       * Podstawa prawna pochodzi bezpośrednio
-       * z kolumny PODSTAWA_PRAWNA.
-       */
+
+      // ========================================================
+      // PODSTAWA PRAWNA
+      // ========================================================
+
       legalBasis.textContent =
         currentQuestion.legalBasis ||
         "Brak podstawy prawnej w bazie.";
 
-      showQuestionImage();
+
+      // ========================================================
+      // OBRAZ PO ZATWIERDZENIU
+      // ========================================================
+
+      hideImage(
+        postImageBox,
+        postQuestionImage
+      );
+
+
+      if (
+        currentQuestion.image &&
+        currentQuestion.imageMoment === "PO"
+      ) {
+
+        showImage(
+          postImageBox,
+          postQuestionImage,
+          currentQuestion.image
+        );
+      }
+
 
       result.scrollIntoView({
         behavior: "smooth",
@@ -1337,49 +1606,74 @@
 
 
     // ============================================================
-    // OBRAZ
+    // OBSŁUGA OBRAZU
     // ============================================================
 
-    function showQuestionImage() {
+    function showImage(
+      imageBox,
+      imageElement,
+      imagePath
+    ) {
 
-      const imagePath =
-        currentQuestion.image;
+      imageElement.removeAttribute(
+        "src"
+      );
 
-      if (!imagePath) {
 
-        imageBox.classList.remove(
-          "visible"
-        );
+      imageBox.classList.remove(
+        "visible"
+      );
 
-        questionImage.removeAttribute(
-          "src"
-        );
 
-        return;
-      }
-
-      questionImage.src =
-        imagePath;
-
-      questionImage.onerror =
+      imageElement.onerror =
         () => {
 
           imageBox.classList.remove(
             "visible"
           );
 
-          questionImage.removeAttribute(
+          imageElement.removeAttribute(
             "src"
           );
         };
 
-      questionImage.onload =
+
+      imageElement.onload =
         () => {
 
           imageBox.classList.add(
             "visible"
           );
         };
+
+
+      imageElement.src =
+        imagePath;
+    }
+
+
+    function hideImage(
+      imageBox,
+      imageElement
+    ) {
+
+      imageBox.classList.remove(
+        "visible"
+      );
+
+
+      imageElement.removeAttribute(
+        "src"
+      );
+
+
+      imageElement.removeAttribute(
+        "alt"
+      );
+
+
+      imageElement.alt =
+        "Ilustracja do pytania";
     }
 
 
@@ -1414,13 +1708,16 @@
       const solved =
         testQuestions.length;
 
+
       alert(
         `Test zakończony!\nRozwiązano ${solved} pytań.`
       );
 
+
       testScreen.classList.remove(
         "active"
       );
+
 
       startScreen.classList.add(
         "active"
@@ -1438,13 +1735,17 @@
     ) {
 
       if (!id) {
+
         return;
       }
+
 
       const storageKey =
         "kurs_instruktora_statystyki";
 
+
       let statistics = {};
+
 
       try {
 
@@ -1460,18 +1761,26 @@
         statistics = {};
       }
 
+
       if (!statistics[id]) {
 
         statistics[id] = {
+
           solved: 0,
+
           correct: 0,
+
           wrong: 0,
+
           lastSolved: null,
+
           lastWrong: null
         };
       }
 
+
       statistics[id].solved++;
+
 
       if (isCorrect) {
 
@@ -1485,8 +1794,10 @@
           new Date().toISOString();
       }
 
+
       statistics[id].lastSolved =
         new Date().toISOString();
+
 
       localStorage.setItem(
         storageKey,
@@ -1515,6 +1826,7 @@
             (i + 1)
           );
 
+
         [
           array[i],
           array[j]
@@ -1524,6 +1836,7 @@
         ];
       }
 
+
       return array;
     }
 
@@ -1532,16 +1845,24 @@
     // PORÓWNANIE TABLIC
     // ============================================================
 
-    function arraysEqual(a, b) {
+    function arraysEqual(
+      a,
+      b
+    ) {
 
       if (
         a.length !== b.length
       ) {
+
         return false;
       }
 
+
       return a.every(
-        (value, index) =>
+        (
+          value,
+          index
+        ) =>
           value === b[index]
       );
     }
@@ -1554,27 +1875,33 @@
     function escapeHtml(text) {
 
       return String(text)
+
         .replaceAll(
           "&",
           "&amp;"
         )
+
         .replaceAll(
           "<",
           "&lt;"
         )
+
         .replaceAll(
           ">",
           "&gt;"
         )
+
         .replaceAll(
           '"',
           "&quot;"
         )
+
         .replaceAll(
           "'",
           "&#039;"
         );
     }
+
   </script>
 
 </body>
