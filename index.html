@@ -1251,6 +1251,12 @@
     questionText.textContent =
       currentQuestion.question;
 
+    console.log("=== DEBUG PYTANIE ===");
+console.log("ID:", currentQuestion.id);
+console.log("POPRAWNE RAW:", currentQuestion.correctKey);
+console.log("POPRAWNE PARSED:", currentQuestion.correctAnswers);
+console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
+
 
     progressText.textContent =
       `Pytanie ${
