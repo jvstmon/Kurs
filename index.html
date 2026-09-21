@@ -1,1403 +1,1938 @@
+```html
 <!DOCTYPE html>
-
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-```
-<meta name="theme-color" content="#173b2a">
-<meta name="description" content="Testy dla kandydatów na instruktorów nauki jazdy">
+  <meta name="theme-color" content="#173b2a">
+  <meta name="description" content="Testy dla kandydatów na instruktorów nauki jazdy">
 
-<title>Testy instruktora</title>
+  <title>Testy instruktora</title>
 
-<style>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
     * {
-        box-sizing: border-box;
+      box-sizing: border-box;
     }
 
     body {
-        margin: 0;
-        font-family: Arial, Helvetica, sans-serif;
-        background: #f3f5f4;
-        color: #1c1c1c;
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f3f5f4;
+      color: #17221c;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
     }
 
     header {
-        background: #173b2a;
-        color: white;
-        padding: 18px 20px;
-        text-align: center;
+      background: #173b2a;
+      color: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.12);
     }
 
     header h1 {
-        margin: 0;
-        font-size: 24px;
+      margin: 0 0 6px;
+      font-size: 25px;
     }
 
-    #app {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 20px;
+    header p {
+      margin: 0;
+      opacity: 0.85;
+      font-size: 14px;
     }
 
-    .panel {
-        background: white;
-        border-radius: 14px;
-        padding: 20px;
-        margin-bottom: 18px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
-
-    #status {
-        text-align: center;
-        color: #555;
-    }
-
-    #questionNumber {
-        color: #173b2a;
-        font-weight: bold;
-        margin-bottom: 12px;
-    }
-
-    #questionText {
-        font-size: 22px;
-        line-height: 1.4;
-        font-weight: bold;
-        margin-bottom: 20px;
-    }
-
-    #questionImage {
-        max-width: 100%;
-        max-height: 400px;
-        display: block;
-        margin: 15px auto 20px;
-        border-radius: 10px;
-    }
-
-    .answers {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .answer {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 15px;
-        border: 2px solid #ddd;
-        border-radius: 10px;
-        cursor: pointer;
-        background: white;
-        transition: 0.15s;
-    }
-
-    .answer:hover {
-        border-color: #173b2a;
-        background: #f8faf9;
-    }
-
-    .answer input {
-        margin-top: 4px;
-        width: 18px;
-        height: 18px;
-        flex-shrink: 0;
-    }
-
-    .answer-letter {
-        font-weight: bold;
-        min-width: 24px;
-    }
-
-    .answer-text {
-        flex: 1;
-        line-height: 1.4;
-    }
-
-    .answer.correct {
-        border-color: #248a4a;
-        background: #eaf7ee;
-    }
-
-    .answer.incorrect {
-        border-color: #c93434;
-        background: #fdecec;
-    }
-
-    .answer.missed {
-        border-color: #248a4a;
-        background: #eaf7ee;
-    }
-
-    .buttons {
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-        flex-wrap: wrap;
-    }
-
-    button {
-        border: 0;
-        border-radius: 9px;
-        padding: 13px 20px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-    #checkButton {
-        background: #173b2a;
-        color: white;
-    }
-
-    #nextButton {
-        background: #d9a441;
-        color: #1c1c1c;
-    }
-
-    button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    #result {
-        margin-top: 18px;
-        padding: 15px;
-        border-radius: 10px;
-        display: none;
-        line-height: 1.5;
-    }
-
-    #result.correct-result {
-        display: block;
-        background: #eaf7ee;
-        border: 1px solid #248a4a;
-    }
-
-    #result.incorrect-result {
-        display: block;
-        background: #fdecec;
-        border: 1px solid #c93434;
-    }
-
-    #explanationPanel {
-        display: none;
-        margin-top: 18px;
-        padding: 18px;
-        border-radius: 10px;
-        background: #f4f6f5;
-        border-left: 5px solid #173b2a;
-    }
-
-    #explanationPanel h3 {
-        margin-top: 0;
-    }
-
-    #legalBasis {
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 1px solid #ddd;
-        font-size: 14px;
-        color: #555;
-    }
-
-    #stats {
-        display: flex;
-        gap: 15px;
-        flex-wrap: wrap;
-        margin-bottom: 18px;
+    .stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 15px;
     }
 
     .stat {
-        flex: 1;
-        min-width: 120px;
-        background: white;
-        padding: 14px;
-        border-radius: 10px;
-        text-align: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 13px;
     }
 
-    .stat-value {
-        display: block;
-        font-size: 24px;
-        font-weight: bold;
-        color: #173b2a;
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 18px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
     }
 
-    .stat-label {
-        display: block;
-        font-size: 13px;
-        color: #666;
-        margin-top: 4px;
+    .question-number {
+      color: #52715f;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 10px;
     }
 
-    .hidden {
-        display: none !important;
+    .question {
+      font-size: 22px;
+      line-height: 1.4;
+      font-weight: bold;
+      margin-bottom: 22px;
     }
 
-    .multi-info {
-        font-size: 14px;
-        color: #666;
-        margin-bottom: 15px;
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .answer {
+      position: relative;
+    }
+
+    .answer input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .answer label {
+      display: block;
+      border: 2px solid #d8dfdb;
+      border-radius: 12px;
+      padding: 15px 16px;
+      cursor: pointer;
+      transition: 0.15s ease;
+      background: white;
+      line-height: 1.4;
+    }
+
+    .answer label:hover {
+      border-color: #789582;
+      background: #f7faf8;
+    }
+
+    .answer input:checked + label {
+      border-color: #173b2a;
+      background: #edf5ef;
+    }
+
+    .answer-letter {
+      display: inline-flex;
+      width: 30px;
+      height: 30px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #dfe8e1;
+      font-weight: bold;
+      margin-right: 9px;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+
+    .answer input:checked + label .answer-letter {
+      background: #173b2a;
+      color: white;
+    }
+
+    .answer.correct label {
+      border-color: #24733d;
+      background: #edf8ef;
+    }
+
+    .answer.correct .answer-letter {
+      background: #24733d;
+      color: white;
+    }
+
+    .answer.incorrect label {
+      border-color: #a93232;
+      background: #fff0f0;
+    }
+
+    .answer.incorrect .answer-letter {
+      background: #a93232;
+      color: white;
+    }
+
+    .answer.missed label {
+      border-color: #c78b18;
+      background: #fff8e6;
+    }
+
+    .answer.missed .answer-letter {
+      background: #c78b18;
+      color: white;
+    }
+
+    .answer.disabled label {
+      cursor: default;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 13px 18px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #checkBtn {
+      background: #173b2a;
+      color: white;
+    }
+
+    #nextBtn {
+      background: #dfe8e1;
+      color: #173b2a;
+    }
+
+    #checkBtn:disabled,
+    #nextBtn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .result {
+      margin-top: 18px;
+      padding: 15px;
+      border-radius: 12px;
+      display: none;
+      line-height: 1.5;
+    }
+
+    .result.good {
+      display: block;
+      background: #edf8ef;
+      border: 1px solid #9ac9a5;
+    }
+
+    .result.bad {
+      display: block;
+      background: #fff0f0;
+      border: 1px solid #dfa2a2;
+    }
+
+    .explanation {
+      margin-top: 18px;
+      padding: 16px;
+      border-left: 4px solid #173b2a;
+      background: #f4f7f5;
+      border-radius: 8px;
+      line-height: 1.55;
+      white-space: pre-line;
+    }
+
+    .legal {
+      margin-top: 15px;
+      padding: 16px;
+      border-left: 4px solid #789582;
+      background: #f7f7f7;
+      border-radius: 8px;
+      line-height: 1.55;
+      white-space: pre-line;
+      font-size: 14px;
+    }
+
+    .image-container {
+      margin: 0 0 20px;
+      text-align: center;
+    }
+
+    .image-container img {
+      max-width: 100%;
+      max-height: 420px;
+      border-radius: 12px;
+      object-fit: contain;
+    }
+
+    .message {
+      text-align: center;
+      padding: 30px 20px;
+      color: #526158;
     }
 
     .error {
-        color: #a52020;
-        background: #fdecec;
-        padding: 15px;
-        border-radius: 10px;
-        line-height: 1.5;
+      background: #fff0f0;
+      color: #8c2525;
+      border: 1px solid #dfa2a2;
+      border-radius: 12px;
+      padding: 15px;
+      white-space: pre-line;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px 20px;
+      color: #526158;
+    }
+
+    .progress {
+      height: 7px;
+      background: #dfe6e1;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 15px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: #173b2a;
+      transition: width 0.2s ease;
+    }
+
+    .multi-info {
+      font-size: 13px;
+      color: #68756e;
+      margin-top: -12px;
+      margin-bottom: 15px;
+    }
+
+    .debug {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #7a847e;
+      display: none;
     }
 
     @media (max-width: 600px) {
-        #app {
-            padding: 12px;
-        }
+      .app {
+        padding: 12px;
+      }
 
-        .panel {
-            padding: 15px;
-        }
+      .card {
+        padding: 16px;
+      }
 
-        #questionText {
-            font-size: 19px;
-        }
+      .question {
+        font-size: 19px;
+      }
 
-        .buttons button {
-            width: 100%;
-        }
+      .answer label {
+        padding: 13px;
+      }
+
+      button {
+        width: 100%;
+      }
     }
-</style>
-```
-
+  </style>
 </head>
 
 <body>
 
-<header>
-    <h1>Testy dla kandydatów na instruktorów</h1>
-</header>
+<div class="app">
 
-<div id="app">
+  <header>
+    <h1>Testy instruktora nauki jazdy</h1>
+    <p>Baza pytań egzaminacyjnych</p>
 
-```
-<div id="stats">
-    <div class="stat">
-        <span class="stat-value" id="totalQuestions">0</span>
-        <span class="stat-label">Pytań w bazie</span>
+    <div class="stats">
+      <div class="stat">
+        Pytanie: <strong id="currentNumber">-</strong>
+      </div>
+
+      <div class="stat">
+        Poprawne: <strong id="correctCount">0</strong>
+      </div>
+
+      <div class="stat">
+        Błędne: <strong id="incorrectCount">0</strong>
+      </div>
     </div>
 
-    <div class="stat">
-        <span class="stat-value" id="answeredQuestions">0</span>
-        <span class="stat-label">Odpowiedziano</span>
+    <div class="progress">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+  </header>
+
+  <main id="appContent">
+
+    <div class="loading" id="loading">
+      Ładowanie bazy pytań...
     </div>
 
-    <div class="stat">
-        <span class="stat-value" id="correctQuestions">0</span>
-        <span class="stat-label">Poprawnych</span>
-    </div>
-</div>
-
-<div class="panel">
-
-    <div id="status">
-        Wczytywanie bazy pytań...
-    </div>
-
-    <div id="testArea" class="hidden">
-
-        <div id="questionNumber"></div>
-
-        <div id="questionText"></div>
-
-        <img id="questionImage" class="hidden" alt="Ilustracja do pytania">
-
-        <div class="multi-info" id="multiInfo">
-            Zaznacz wszystkie prawidłowe odpowiedzi.
-        </div>
-
-        <div id="answers" class="answers"></div>
-
-        <div class="buttons">
-            <button id="checkButton">
-                Sprawdź odpowiedź
-            </button>
-
-            <button id="nextButton" disabled>
-                Następne pytanie
-            </button>
-        </div>
-
-        <div id="result"></div>
-
-        <div id="explanationPanel">
-
-            <h3>Wyjaśnienie</h3>
-
-            <div id="explanation"></div>
-
-            <div id="legalBasis">
-                <strong>Podstawa prawna:</strong>
-                <div id="legalBasisText"></div>
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-```
+  </main>
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.18.5/package/dist/xlsx.full.min.js"></script>
 
 <script>
-"use strict";
 
-/* =========================================================
-   KONFIGURACJA
-   ========================================================= */
+  /*
+   * ============================================================
+   * KONFIGURACJA
+   * ============================================================
+   */
 
-const EXCEL_FILE = "Baza_danych.xlsx";
-
-/*
- * Zmieniaj tę wartość po każdej większej zmianie pliku Excel,
- * jeśli przeglądarka uparcie pokazuje starą wersję.
- */
-const CACHE_VERSION = "20260921-7";
+  const EXCEL_FILE =
+    "Baza_danych.xlsx?v=20260921-1";
 
 
-/* =========================================================
-   STAN APLIKACJI
-   ========================================================= */
+  /*
+   * ============================================================
+   * STAN APLIKACJI
+   * ============================================================
+   */
 
-let questions = [];
-let currentQuestion = null;
-let currentQuestionIndex = 0;
+  let questions = [];
 
-let answeredCount = 0;
-let correctCount = 0;
+  let currentQuestionIndex = 0;
 
-let questionOrder = [];
+  let currentQuestion = null;
 
+  let answered = false;
 
-/* =========================================================
-   ELEMENTY HTML
-   ========================================================= */
+  let correctCount = 0;
 
-const statusElement = document.getElementById("status");
-const testArea = document.getElementById("testArea");
-
-const questionNumberElement = document.getElementById("questionNumber");
-const questionTextElement = document.getElementById("questionText");
-
-const questionImageElement = document.getElementById("questionImage");
-
-const answersElement = document.getElementById("answers");
-
-const checkButton = document.getElementById("checkButton");
-const nextButton = document.getElementById("nextButton");
-
-const resultElement = document.getElementById("result");
-
-const explanationPanel = document.getElementById("explanationPanel");
-const explanationElement = document.getElementById("explanation");
-const legalBasisTextElement = document.getElementById("legalBasisText");
-
-const totalQuestionsElement = document.getElementById("totalQuestions");
-const answeredQuestionsElement = document.getElementById("answeredQuestions");
-const correctQuestionsElement = document.getElementById("correctQuestions");
-
-const multiInfoElement = document.getElementById("multiInfo");
+  let incorrectCount = 0;
 
 
-/* =========================================================
-   NORMALIZACJA NAGŁÓWKÓW EXCELA
-   ========================================================= */
+  /*
+   * ============================================================
+   * ELEMENTY HTML
+   * ============================================================
+   */
 
-function normalizeHeader(value) {
-    return String(value ?? "")
-        .trim()
-        .toUpperCase()
-        .replace(/\s+/g, "_");
-}
+  const appContent =
+    document.getElementById("appContent");
+
+  const loading =
+    document.getElementById("loading");
+
+  const currentNumber =
+    document.getElementById("currentNumber");
+
+  const correctCountElement =
+    document.getElementById("correctCount");
+
+  const incorrectCountElement =
+    document.getElementById("incorrectCount");
+
+  const progressBar =
+    document.getElementById("progressBar");
 
 
-/* =========================================================
-   ODCZYT POPRAWNOŚCI
-   ========================================================= */
+  /*
+   * ============================================================
+   * NORMALIZACJA NAZW KOLUMN
+   * ============================================================
+   *
+   * Dzięki temu kolejność kolumn w Excelu może się zmienić.
+   * Liczy się nazwa nagłówka.
+   */
 
-/*
- * Każda odpowiedź ma własną kolumnę:
- *
- * POPRAWNA_A
- * POPRAWNA_B
- * POPRAWNA_C
- *
- * Zalecane wartości:
- *
- * 1 = poprawna
- * 0 = niepoprawna
- *
- * Dodatkowo funkcja rozpoznaje:
- * TAK, TRUE, PRAWDA, X
- * NIE, FALSE, FAŁSZ
- *
- * Dzięki temu nawet przypadkowe wpisanie TAK/NIE
- * nie rozwali logiki.
- */
-
-function isCorrectValue(value) {
+  function normalizeHeader(value) {
 
     if (value === null || value === undefined) {
-        return false;
+      return "";
     }
 
-    const text = String(value)
+    return String(value)
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, "_");
+
+  }
+
+
+  /*
+   * ============================================================
+   * WARTOŚĆ 0/1
+   * ============================================================
+   *
+   * Główna baza używa:
+   *
+   * 1 = odpowiedź prawidłowa
+   * 0 = odpowiedź nieprawidłowa
+   *
+   * Dodatkowo obsługujemy kilka bezpiecznych wariantów,
+   * gdyby Excel zmienił sposób zapisania wartości.
+   */
+
+  function isCorrectFlag(value) {
+
+    if (value === null || value === undefined) {
+      return false;
+    }
+
+    const text =
+      String(value)
         .trim()
         .toUpperCase();
 
-    if (text === "1") return true;
-    if (text === "TAK") return true;
-    if (text === "TRUE") return true;
-    if (text === "PRAWDA") return true;
-    if (text === "X") return true;
-
-    if (text === "0") return false;
-    if (text === "NIE") return false;
-    if (text === "FALSE") return false;
-    if (text === "FAŁSZ") return false;
-    if (text === "") return false;
+    if (
+      text === "1" ||
+      text === "TRUE" ||
+      text === "PRAWDA" ||
+      text === "TAK" ||
+      text === "YES" ||
+      text === "X"
+    ) {
+      return true;
+    }
 
     return false;
-}
+  }
 
 
-/* =========================================================
-   WCZYTANIE POPRAWNYCH ODPOWIEDZI
-   ========================================================= */
+  /*
+   * ============================================================
+   * POBIERANIE WARTOŚCI Z WIERSZA
+   * ============================================================
+   */
 
-function getCorrectAnswers(row, headerIndex) {
+  function getCell(row, headerIndex, headerName) {
 
-    const correctAnswers = [];
-
-    if (
-        isCorrectValue(
-            row[headerIndex["POPRAWNA_A"]]
-        )
-    ) {
-        correctAnswers.push("A");
-    }
+    const index =
+      headerIndex[normalizeHeader(headerName)];
 
     if (
-        isCorrectValue(
-            row[headerIndex["POPRAWNA_B"]]
-        )
+      index === undefined ||
+      index === null
     ) {
-        correctAnswers.push("B");
+      return "";
     }
 
-    if (
-        isCorrectValue(
-            row[headerIndex["POPRAWNA_C"]]
-        )
-    ) {
-        correctAnswers.push("C");
-    }
+    return row[index];
 
-    return correctAnswers;
-}
+  }
 
 
-/* =========================================================
-   TASOWANIE
-   ========================================================= */
+  /*
+   * ============================================================
+   * WCZYTANIE EXCELA
+   * ============================================================
+   */
 
-function shuffle(array) {
-
-    const result = [...array];
-
-    for (let i = result.length - 1; i > 0; i--) {
-
-        const j = Math.floor(
-            Math.random() * (i + 1)
-        );
-
-        [
-            result[i],
-            result[j]
-        ] = [
-            result[j],
-            result[i]
-        ];
-    }
-
-    return result;
-}
-
-
-/* =========================================================
-   POBRANIE DANYCH Z EXCELA
-   ========================================================= */
-
-async function loadQuestions() {
+  async function loadQuestions() {
 
     try {
 
-        statusElement.textContent =
-            "Wczytywanie bazy pytań...";
+      const response =
+        await fetch(EXCEL_FILE, {
+          cache: "no-store"
+        });
 
-        const response = await fetch(
-            `${EXCEL_FILE}?v=${CACHE_VERSION}`,
-            {
-                cache: "no-store"
-            }
+      if (!response.ok) {
+        throw new Error(
+          "Nie udało się pobrać pliku Baza_danych.xlsx. " +
+          "Kod HTTP: " + response.status
+        );
+      }
+
+      const arrayBuffer =
+        await response.arrayBuffer();
+
+      const workbook =
+        XLSX.read(arrayBuffer, {
+          type: "array"
+        });
+
+      if (
+        !workbook.SheetNames ||
+        workbook.SheetNames.length === 0
+      ) {
+        throw new Error(
+          "Plik Excel nie zawiera żadnego arkusza."
+        );
+      }
+
+      const sheetName =
+        workbook.SheetNames[0];
+
+      const worksheet =
+        workbook.Sheets[sheetName];
+
+      const rows =
+        XLSX.utils.sheet_to_json(
+          worksheet,
+          {
+            header: 1,
+            defval: ""
+          }
         );
 
-        if (!response.ok) {
-            throw new Error(
-                `Nie udało się pobrać pliku ${EXCEL_FILE}.`
-            );
+      if (!rows.length) {
+        throw new Error(
+          "Arkusz Excel jest pusty."
+        );
+      }
+
+
+      /*
+       * --------------------------------------------------------
+       * NAGŁÓWKI
+       * --------------------------------------------------------
+       */
+
+      const rawHeaders =
+        rows[0];
+
+      const headerIndex = {};
+
+      rawHeaders.forEach(
+        (header, index) => {
+
+          const normalized =
+            normalizeHeader(header);
+
+          if (normalized) {
+            headerIndex[normalized] = index;
+          }
+
         }
+      );
 
-        const arrayBuffer =
-            await response.arrayBuffer();
 
-        const workbook =
-            XLSX.read(arrayBuffer, {
-                type: "array"
-            });
+      /*
+       * --------------------------------------------------------
+       * WYMAGANE KOLUMNY
+       * --------------------------------------------------------
+       */
 
-        if (!workbook.SheetNames.length) {
-            throw new Error(
-                "Plik Excel nie zawiera żadnego arkusza."
-            );
-        }
+      const requiredHeaders = [
+        "ID",
+        "PYTANIE",
+        "ODPOWIEDZ_A",
+        "ODPOWIEDZ_B",
+        "ODPOWIEDZ_C",
+        "POPRAWNA_A",
+        "POPRAWNA_B",
+        "POPRAWNA_C",
+        "WYJAŚNIENIE",
+        "PODSTAWA_PRAWNA",
+        "OBRAZ"
+      ];
 
-        const sheet =
-            workbook.Sheets[
-                workbook.SheetNames[0]
-            ];
-
-        const rawRows =
-            XLSX.utils.sheet_to_json(
-                sheet,
-                {
-                    header: 1,
-                    defval: ""
-                }
-            );
-
-        if (!rawRows.length) {
-            throw new Error(
-                "Arkusz Excel jest pusty."
-            );
-        }
-
-        const rawHeaders =
-            rawRows[0];
-
-        const headers =
-            rawHeaders.map(normalizeHeader);
-
-        const headerIndex = {};
-
-        headers.forEach(
-            (header, index) => {
-                if (header) {
-                    headerIndex[header] = index;
-                }
-            }
+      const missingHeaders =
+        requiredHeaders.filter(
+          header =>
+            headerIndex[
+              normalizeHeader(header)
+            ] === undefined
         );
 
 
-        /* ---------------------------------------------
-           SPRAWDZENIE WYMAGANYCH KOLUMN
-           --------------------------------------------- */
+      if (missingHeaders.length > 0) {
 
-        const requiredHeaders = [
-            "ID",
-            "PYTANIE",
-            "ODPOWIEDZ_1",
-            "ODPOWIEDZ_2",
-            "ODPOWIEDZ_3",
-            "POPRAWNA_A",
-            "POPRAWNA_B",
-            "POPRAWNA_C"
-        ];
-
-        const missingHeaders =
-            requiredHeaders.filter(
-                header =>
-                    !(header in headerIndex)
-            );
-
-        if (missingHeaders.length) {
-
-            throw new Error(
-                "Brakuje wymaganych kolumn w Excelu: " +
-                missingHeaders.join(", ")
-            );
-        }
-
-
-        /* ---------------------------------------------
-           BUDOWANIE BAZY PYTAŃ
-           --------------------------------------------- */
-
-        questions = [];
-
-        for (let i = 1; i < rawRows.length; i++) {
-
-            const row = rawRows[i];
-
-            const questionText =
-                String(
-                    row[headerIndex["PYTANIE"]] ?? ""
-                ).trim();
-
-            if (!questionText) {
-                continue;
-            }
-
-            const correctAnswers =
-                getCorrectAnswers(
-                    row,
-                    headerIndex
-                );
-
-            const question = {
-
-                id:
-                    row[
-                        headerIndex["ID"]
-                    ],
-
-                text:
-                    questionText,
-
-                answers: {
-
-                    A:
-                        String(
-                            row[
-                                headerIndex["ODPOWIEDZ_1"]
-                            ] ?? ""
-                        ).trim(),
-
-                    B:
-                        String(
-                            row[
-                                headerIndex["ODPOWIEDZ_2"]
-                            ] ?? ""
-                        ).trim(),
-
-                    C:
-                        String(
-                            row[
-                                headerIndex["ODPOWIEDZ_3"]
-                            ] ?? ""
-                        ).trim()
-                },
-
-                correctAnswers:
-                    correctAnswers,
-
-                explanation:
-                    headerIndex["WYJAŚNIENIE"] !== undefined
-                        ? String(
-                            row[
-                                headerIndex["WYJAŚNIENIE"]
-                            ] ?? ""
-                        ).trim()
-                        : "",
-
-                legalBasis:
-                    headerIndex["PODSTAWA_PRAWNA"] !== undefined
-                        ? String(
-                            row[
-                                headerIndex["PODSTAWA_PRAWNA"]
-                            ] ?? ""
-                        ).trim()
-                        : "",
-
-                image:
-                    headerIndex["OBRAZ"] !== undefined
-                        ? String(
-                            row[
-                                headerIndex["OBRAZ"]
-                            ] ?? ""
-                        ).trim()
-                        : ""
-            };
-
-
-            /*
-             * Jeżeli pytanie nie ma zaznaczonej
-             * żadnej poprawnej odpowiedzi,
-             * nie dodajemy go do testu.
-             */
-            if (
-                question.correctAnswers.length === 0
-            ) {
-                console.warn(
-                    "Pytanie bez poprawnej odpowiedzi:",
-                    question.id,
-                    question.text
-                );
-
-                continue;
-            }
-
-            questions.push(question);
-        }
-
-
-        if (!questions.length) {
-            throw new Error(
-                "Nie znaleziono żadnych prawidłowo zbudowanych pytań."
-            );
-        }
-
-
-        /* ---------------------------------------------
-           LOSOWA KOLEJNOŚĆ
-           --------------------------------------------- */
-
-        questionOrder =
-            shuffle(
-                questions.map(
-                    (_, index) => index
-                )
-            );
-
-        currentQuestionIndex = 0;
-
-
-        /* ---------------------------------------------
-           STATYSTYKI
-           --------------------------------------------- */
-
-        totalQuestionsElement.textContent =
-            questions.length;
-
-        answeredQuestionsElement.textContent =
-            "0";
-
-        correctQuestionsElement.textContent =
-            "0";
-
-
-        /* ---------------------------------------------
-           URUCHOMIENIE TESTU
-           --------------------------------------------- */
-
-        statusElement.classList.add(
-            "hidden"
+        throw new Error(
+          "Brakuje wymaganych kolumn w bazie:\n\n" +
+          missingHeaders.join("\n") +
+          "\n\n" +
+          "Oczekiwane nagłówki to:\n" +
+          requiredHeaders.join("\n")
         );
 
-        testArea.classList.remove(
-            "hidden"
+      }
+
+
+      /*
+       * --------------------------------------------------------
+       * BUDOWANIE PYTAŃ
+       * --------------------------------------------------------
+       */
+
+      const loadedQuestions = [];
+
+      for (
+        let rowNumber = 1;
+        rowNumber < rows.length;
+        rowNumber++
+      ) {
+
+        const row = rows[rowNumber];
+
+        if (!row) {
+          continue;
+        }
+
+
+        const id =
+          getCell(
+            row,
+            headerIndex,
+            "ID"
+          );
+
+        const questionText =
+          getCell(
+            row,
+            headerIndex,
+            "PYTANIE"
+          );
+
+
+        /*
+         * Puste wiersze pomijamy.
+         */
+
+        if (
+          questionText === null ||
+          questionText === undefined ||
+          String(questionText).trim() === ""
+        ) {
+          continue;
+        }
+
+
+        const answerA =
+          getCell(
+            row,
+            headerIndex,
+            "ODPOWIEDZ_A"
+          );
+
+        const answerB =
+          getCell(
+            row,
+            headerIndex,
+            "ODPOWIEDZ_B"
+          );
+
+        const answerC =
+          getCell(
+            row,
+            headerIndex,
+            "ODPOWIEDZ_C"
+          );
+
+
+        /*
+         * ------------------------------------------------------
+         * POPRAWNE ODPOWIEDZI
+         * ------------------------------------------------------
+         *
+         * NIE MA TU JUŻ ŻADNEGO PARSOWANIA:
+         *
+         * POPRAWNE = 1/0
+         *
+         * A -> POPRAWNA_A
+         * B -> POPRAWNA_B
+         * C -> POPRAWNA_C
+         *
+         * Dzięki temu np.
+         *
+         * 0 | 1 | 1
+         *
+         * daje dokładnie:
+         *
+         * ["B", "C"]
+         */
+
+        const correctAnswers = [];
+
+
+        const correctA =
+          isCorrectFlag(
+            getCell(
+              row,
+              headerIndex,
+              "POPRAWNA_A"
+            )
+          );
+
+        const correctB =
+          isCorrectFlag(
+            getCell(
+              row,
+              headerIndex,
+              "POPRAWNA_B"
+            )
+          );
+
+        const correctC =
+          isCorrectFlag(
+            getCell(
+              row,
+              headerIndex,
+              "POPRAWNA_C"
+            )
+          );
+
+
+        if (correctA) {
+          correctAnswers.push("A");
+        }
+
+        if (correctB) {
+          correctAnswers.push("B");
+        }
+
+        if (correctC) {
+          correctAnswers.push("C");
+        }
+
+
+        /*
+         * Jeżeli pytanie nie ma żadnej poprawnej odpowiedzi,
+         * traktujemy bazę jako błędną.
+         */
+
+        if (correctAnswers.length === 0) {
+
+          console.warn(
+            "Pytanie bez poprawnej odpowiedzi:",
+            id,
+            questionText
+          );
+
+          continue;
+        }
+
+
+        /*
+         * ------------------------------------------------------
+         * WYJAŚNIENIE / PODSTAWA / OBRAZ
+         * ------------------------------------------------------
+         */
+
+        const explanation =
+          getCell(
+            row,
+            headerIndex,
+            "WYJAŚNIENIE"
+          );
+
+        const legalBasis =
+          getCell(
+            row,
+            headerIndex,
+            "PODSTAWA_PRAWNA"
+          );
+
+        const image =
+          getCell(
+            row,
+            headerIndex,
+            "OBRAZ"
+          );
+
+
+        loadedQuestions.push({
+
+          id:
+            String(id).trim(),
+
+          question:
+            String(questionText).trim(),
+
+          answers: {
+
+            A:
+              String(answerA ?? "").trim(),
+
+            B:
+              String(answerB ?? "").trim(),
+
+            C:
+              String(answerC ?? "").trim()
+
+          },
+
+          correctAnswers,
+
+          explanation:
+            String(explanation ?? "").trim(),
+
+          legalBasis:
+            String(legalBasis ?? "").trim(),
+
+          image:
+            String(image ?? "").trim()
+
+        });
+
+      }
+
+
+      if (loadedQuestions.length === 0) {
+
+        throw new Error(
+          "Nie udało się wczytać żadnego pytania z bazy."
         );
 
-        showQuestion();
+      }
+
+
+      /*
+       * --------------------------------------------------------
+       * LOSOWANIE PYTAŃ
+       * --------------------------------------------------------
+       */
+
+      questions =
+        shuffleArray(
+          loadedQuestions
+        );
+
+
+      /*
+       * --------------------------------------------------------
+       * START
+       * --------------------------------------------------------
+       */
+
+      currentQuestionIndex = 0;
+
+      correctCount = 0;
+
+      incorrectCount = 0;
+
+      updateStats();
+
+      renderQuestion();
 
 
     } catch (error) {
 
-        console.error(
-            "Błąd podczas wczytywania:",
-            error
-        );
+      console.error(
+        "Błąd ładowania bazy:",
+        error
+      );
 
-        statusElement.innerHTML = `
-            <div class="error">
-                <strong>Nie udało się wczytać bazy pytań.</strong>
-                <br><br>
-                ${escapeHtml(error.message)}
-            </div>
-        `;
-    }
-}
+      showError(
+        error.message ||
+        "Wystąpił nieznany błąd podczas ładowania bazy."
+      );
 
-
-/* =========================================================
-   WYŚWIETLENIE PYTANIA
-   ========================================================= */
-
-function showQuestion() {
-
-    if (!questionOrder.length) {
-        finishTest();
-        return;
     }
 
-    const realIndex =
-        questionOrder[
-            currentQuestionIndex
-        ];
-
-    currentQuestion =
-        questions[realIndex];
+  }
 
 
-    /* ---------------------------------------------
-       NUMER PYTANIA
-       --------------------------------------------- */
+  /*
+   * ============================================================
+   * LOSOWANIE
+   * ============================================================
+   */
 
-    questionNumberElement.textContent =
-        `Pytanie ${currentQuestionIndex + 1} z ${questionOrder.length}`;
+  function shuffleArray(array) {
 
+    const result =
+      [...array];
 
-    /* ---------------------------------------------
-       TREŚĆ
-       --------------------------------------------- */
-
-    questionTextElement.textContent =
-        currentQuestion.text;
-
-
-    /* ---------------------------------------------
-       ODPOWIEDZI
-       --------------------------------------------- */
-
-    answersElement.innerHTML = "";
-
-
-    const letters = [
-        "A",
-        "B",
-        "C"
-    ];
-
-
-    letters.forEach(letter => {
-
-        const answerText =
-            currentQuestion.answers[letter];
-
-        const label =
-            document.createElement("label");
-
-        label.className =
-            "answer";
-
-        label.dataset.letter =
-            letter;
-
-
-        const checkbox =
-            document.createElement("input");
-
-        checkbox.type =
-            "checkbox";
-
-        checkbox.value =
-            letter;
-
-        checkbox.dataset.letter =
-            letter;
-
-
-        const letterElement =
-            document.createElement("span");
-
-        letterElement.className =
-            "answer-letter";
-
-        letterElement.textContent =
-            `${letter}.`;
-
-
-        const textElement =
-            document.createElement("span");
-
-        textElement.className =
-            "answer-text";
-
-        textElement.textContent =
-            answerText;
-
-
-        label.appendChild(
-            checkbox
-        );
-
-        label.appendChild(
-            letterElement
-        );
-
-        label.appendChild(
-            textElement
-        );
-
-
-        answersElement.appendChild(
-            label
-        );
-    });
-
-
-    /* ---------------------------------------------
-       INFORMACJA O WIELU ODPOWIEDZIACH
-       --------------------------------------------- */
-
-    if (
-        currentQuestion.correctAnswers.length > 1
+    for (
+      let i = result.length - 1;
+      i > 0;
+      i--
     ) {
 
-        multiInfoElement.textContent =
-            "Uwaga: w tym pytaniu prawidłowych może być kilka odpowiedzi. Zaznacz wszystkie.";
+      const j =
+        Math.floor(
+          Math.random() * (i + 1)
+        );
 
-    } else {
+      [
+        result[i],
+        result[j]
+      ] = [
+        result[j],
+        result[i]
+      ];
 
-        multiInfoElement.textContent =
-            "Zaznacz prawidłową odpowiedź.";
+    }
+
+    return result;
+
+  }
+
+
+  /*
+   * ============================================================
+   * WYŚWIETLANIE PYTANIA
+   * ============================================================
+   */
+
+  function renderQuestion() {
+
+    if (
+      !questions.length ||
+      currentQuestionIndex >= questions.length
+    ) {
+      renderFinished();
+      return;
     }
 
 
-    /* ---------------------------------------------
-       OBRAZ
-       --------------------------------------------- */
+    currentQuestion =
+      questions[
+        currentQuestionIndex
+      ];
+
+    answered = false;
+
+
+    currentNumber.textContent =
+      currentQuestionIndex + 1;
+
+
+    const percentage =
+      (
+        (
+          currentQuestionIndex
+          /
+          questions.length
+        ) * 100
+      );
+
+    progressBar.style.width =
+      percentage + "%";
+
+
+    const hasMultipleCorrect =
+      currentQuestion.correctAnswers.length > 1;
+
+
+    let html = `
+
+      <div class="card">
+
+        <div class="question-number">
+          Pytanie ${currentQuestionIndex + 1}
+          z ${questions.length}
+        </div>
+
+        <div class="question">
+          ${escapeHtml(
+            currentQuestion.question
+          )}
+        </div>
+    `;
+
+
+    /*
+     * ----------------------------------------------------------
+     * OBRAZ
+     * ----------------------------------------------------------
+     */
 
     if (currentQuestion.image) {
 
-        questionImageElement.src =
-            currentQuestion.image;
+      html += `
 
-        questionImageElement.classList.remove(
-            "hidden"
-        );
+        <div class="image-container">
 
-        questionImageElement.onerror =
-            function() {
+          <img
+            src="${escapeAttribute(
+              currentQuestion.image
+            )}"
+            alt="Ilustracja do pytania"
+            onerror="this.parentElement.style.display='none';"
+          >
 
-                this.classList.add(
-                    "hidden"
-                );
-            };
+        </div>
 
-    } else {
+      `;
 
-        questionImageElement.src = "";
-
-        questionImageElement.classList.add(
-            "hidden"
-        );
     }
 
 
-    /* ---------------------------------------------
-       RESET ODPOWIEDZI
-       --------------------------------------------- */
+    /*
+     * ----------------------------------------------------------
+     * INFORMACJA O WIELU ODPOWIEDZIACH
+     * ----------------------------------------------------------
+     */
 
-    resultElement.style.display =
-        "none";
+    if (hasMultipleCorrect) {
 
-    resultElement.className = "";
+      html += `
 
-    resultElement.innerHTML = "";
+        <div class="multi-info">
+          To pytanie ma więcej niż jedną prawidłową odpowiedź.
+          Zaznacz wszystkie, które uważasz za prawidłowe.
+        </div>
 
-    explanationPanel.style.display =
-        "none";
+      `;
 
-    explanationElement.innerHTML =
-        "";
-
-    legalBasisTextElement.innerHTML =
-        "";
-
-
-    checkButton.disabled =
-        false;
-
-    nextButton.disabled =
-        true;
-}
+    }
 
 
-/* =========================================================
-   POBRANIE ZAZNACZONYCH ODPOWIEDZI
-   ========================================================= */
+    /*
+     * ----------------------------------------------------------
+     * ODPOWIEDZI
+     * ----------------------------------------------------------
+     */
 
-function getSelectedAnswers() {
+    html += `
+      <div class="answers">
+    `;
+
+
+    const letters = [
+      "A",
+      "B",
+      "C"
+    ];
+
+
+    letters.forEach(
+      letter => {
+
+        html += `
+
+          <div class="answer">
+
+            <input
+              type="checkbox"
+              id="answer_${letter}"
+              value="${letter}"
+              name="answer"
+            >
+
+            <label for="answer_${letter}">
+
+              <span class="answer-letter">
+                ${letter}
+              </span>
+
+              ${escapeHtml(
+                currentQuestion.answers[letter]
+              )}
+
+            </label>
+
+          </div>
+
+        `;
+
+      }
+    );
+
+
+    html += `
+      </div>
+
+      <div class="buttons">
+
+        <button
+          id="checkBtn"
+          type="button"
+          onclick="checkAnswer()"
+        >
+          Sprawdź odpowiedź
+        </button>
+
+        <button
+          id="nextBtn"
+          type="button"
+          onclick="nextQuestion()"
+          disabled
+        >
+          Następne pytanie
+        </button>
+
+      </div>
+
+      <div
+        id="result"
+        class="result"
+      ></div>
+
+      <div
+        id="explanation"
+        class="explanation"
+        style="display:none;"
+      ></div>
+
+      <div
+        id="legalBasis"
+        class="legal"
+        style="display:none;"
+      ></div>
+
+      <div
+        id="debug"
+        class="debug"
+      ></div>
+
+    </div>
+    `;
+
+
+    appContent.innerHTML =
+      html;
+
+  }
+
+
+  /*
+   * ============================================================
+   * POBRANIE ZAZNACZONYCH ODPOWIEDZI
+   * ============================================================
+   *
+   * Zwracamy:
+   *
+   * ["A"]
+   * ["B", "C"]
+   * ["A", "B", "C"]
+   *
+   * Nigdy:
+   *
+   * [0]
+   * [1]
+   * [2]
+   */
+
+  function getSelectedAnswers() {
 
     const selected = [];
 
     const checkboxes =
-        answersElement.querySelectorAll(
-            'input[type="checkbox"]:checked'
-        );
+      document.querySelectorAll(
+        'input[name="answer"]:checked'
+      );
+
 
     checkboxes.forEach(
-        checkbox => {
+      checkbox => {
 
-            selected.push(
-                checkbox.value
-            );
+        const value =
+          checkbox.value;
+
+        if (
+          value === "A" ||
+          value === "B" ||
+          value === "C"
+        ) {
+          selected.push(value);
         }
+
+      }
     );
 
+
     return selected.sort();
-}
+
+  }
 
 
-/* =========================================================
-   PORÓWNANIE ODPOWIEDZI
-   ========================================================= */
+  /*
+   * ============================================================
+   * SPRAWDZANIE ODPOWIEDZI
+   * ============================================================
+   */
 
-function arraysEqual(a, b) {
+  function checkAnswer() {
 
-    if (a.length !== b.length) {
-        return false;
-    }
-
-    for (let i = 0; i < a.length; i++) {
-
-        if (a[i] !== b[i]) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-
-/* =========================================================
-   SPRAWDZENIE ODPOWIEDZI
-   ========================================================= */
-
-function checkAnswer() {
-
-    if (!currentQuestion) {
-        return;
+    if (
+      answered ||
+      !currentQuestion
+    ) {
+      return;
     }
 
 
     const selectedAnswers =
-        getSelectedAnswers();
+      getSelectedAnswers();
+
+
+    /*
+     * Nie pozwalamy sprawdzić pustej odpowiedzi.
+     */
+
+    if (selectedAnswers.length === 0) {
+
+      const result =
+        document.getElementById("result");
+
+      result.className =
+        "result bad";
+
+      result.style.display =
+        "block";
+
+      result.innerHTML =
+        "<strong>Zaznacz przynajmniej jedną odpowiedź.</strong>";
+
+      return;
+    }
+
+
+    /*
+     * ----------------------------------------------------------
+     * SORTOWANIE OBU TABLIC
+     * ----------------------------------------------------------
+     */
 
     const correctAnswers =
-        [...currentQuestion.correctAnswers]
-            .sort();
+      [
+        ...currentQuestion.correctAnswers
+      ].sort();
 
 
-    /* ---------------------------------------------
-       NIC NIE ZAZNACZONO
-       --------------------------------------------- */
-
-    if (!selectedAnswers.length) {
-
-        resultElement.className =
-            "incorrect-result";
-
-        resultElement.style.display =
-            "block";
-
-        resultElement.innerHTML =
-            "<strong>Zaznacz przynajmniej jedną odpowiedź.</strong>";
-
-        return;
-    }
+    const selectedSorted =
+      [
+        ...selectedAnswers
+      ].sort();
 
 
-    /* ---------------------------------------------
-       SPRAWDZENIE
-       --------------------------------------------- */
+    /*
+     * ----------------------------------------------------------
+     * PORÓWNANIE
+     * ----------------------------------------------------------
+     *
+     * Odpowiedź jest poprawna tylko wtedy, gdy:
+     *
+     * liczba zaznaczonych = liczba poprawnych
+     *
+     * ORAZ
+     *
+     * każda zaznaczona odpowiedź znajduje się
+     * wśród poprawnych.
+     */
 
     const isCorrect =
-        arraysEqual(
-            selectedAnswers,
-            correctAnswers
-        );
+      selectedSorted.length ===
+      correctAnswers.length
+      &&
+      selectedSorted.every(
+        (answer, index) =>
+          answer ===
+          correctAnswers[index]
+      );
 
 
-    answeredCount++;
+    answered = true;
 
-    if (isCorrect) {
-        correctCount++;
-    }
-
-
-    answeredQuestionsElement.textContent =
-        answeredCount;
-
-    correctQuestionsElement.textContent =
-        correctCount;
-
-
-    /* ---------------------------------------------
-       OZNACZENIE ODPOWIEDZI
-       --------------------------------------------- */
-
-    const answerLabels =
-        answersElement.querySelectorAll(
-            ".answer"
-        );
-
-
-    answerLabels.forEach(label => {
-
-        const letter =
-            label.dataset.letter;
-
-
-        label.classList.remove(
-            "correct",
-            "incorrect",
-            "missed"
-        );
-
-
-        const wasSelected =
-            selectedAnswers.includes(
-                letter
-            );
-
-        const isActuallyCorrect =
-            correctAnswers.includes(
-                letter
-            );
-
-
-        /*
-         * Poprawna odpowiedź:
-         * zielona niezależnie od tego,
-         * czy użytkownik ją zaznaczył.
-         */
-        if (isActuallyCorrect) {
-
-            label.classList.add(
-                "correct"
-            );
-        }
-
-
-        /*
-         * Zaznaczona, ale błędna:
-         * czerwona.
-         */
-        if (
-            wasSelected &&
-            !isActuallyCorrect
-        ) {
-
-            label.classList.remove(
-                "correct"
-            );
-
-            label.classList.add(
-                "incorrect"
-            );
-        }
-    });
-
-
-    /* ---------------------------------------------
-       WYNIK
-       --------------------------------------------- */
 
     if (isCorrect) {
 
-        resultElement.className =
-            "correct-result";
-
-        resultElement.innerHTML =
-            "<strong>✓ Poprawna odpowiedź!</strong>";
+      correctCount++;
 
     } else {
 
-        resultElement.className =
-            "incorrect-result";
+      incorrectCount++;
 
-        resultElement.innerHTML =
-            "<strong>✗ Niepoprawna odpowiedź.</strong>";
     }
 
-    resultElement.style.display =
-        "block";
+
+    updateStats();
 
 
-    /* ---------------------------------------------
-       WYJAŚNIENIE
-       --------------------------------------------- */
+    /*
+     * ----------------------------------------------------------
+     * BLOKOWANIE CHECKBOXÓW
+     * ----------------------------------------------------------
+     */
 
-    showExplanation();
+    const allCheckboxes =
+      document.querySelectorAll(
+        'input[name="answer"]'
+      );
 
 
-    /* ---------------------------------------------
-       BLOKADA DALSZEGO ZAZNACZANIA
-       --------------------------------------------- */
+    allCheckboxes.forEach(
+      checkbox => {
 
-    const inputs =
-        answersElement.querySelectorAll(
-            "input"
-        );
+        checkbox.disabled =
+          true;
 
-    inputs.forEach(
-        input => {
-            input.disabled = true;
-        }
+      }
     );
 
 
-    checkButton.disabled =
-        true;
+    /*
+     * ----------------------------------------------------------
+     * OZNACZANIE ODPOWIEDZI
+     * ----------------------------------------------------------
+     */
 
-    nextButton.disabled =
-        false;
-}
+    allCheckboxes.forEach(
+      checkbox => {
+
+        const letter =
+          checkbox.value;
+
+        const answerElement =
+          checkbox.closest(
+            ".answer"
+          );
+
+        if (!answerElement) {
+          return;
+        }
 
 
-/* =========================================================
-   WYJAŚNIENIE
-   ========================================================= */
+        /*
+         * Odpowiedź prawidłowa:
+         * zawsze pokazujemy ją na zielono.
+         */
 
-function showExplanation() {
+        if (
+          correctAnswers.includes(
+            letter
+          )
+        ) {
 
-    explanationPanel.style.display =
+          if (
+            selectedAnswers.includes(
+              letter
+            )
+          ) {
+
+            answerElement.classList.add(
+              "correct"
+            );
+
+          } else {
+
+            /*
+             * Prawidłowa odpowiedź,
+             * której użytkownik nie zaznaczył.
+             */
+
+            answerElement.classList.add(
+              "missed"
+            );
+
+          }
+
+        }
+
+
+        /*
+         * Odpowiedź zaznaczona,
+         * ale nieprawidłowa.
+         */
+
+        if (
+          selectedAnswers.includes(
+            letter
+          )
+          &&
+          !correctAnswers.includes(
+            letter
+          )
+        ) {
+
+          answerElement.classList.add(
+            "incorrect"
+          );
+
+        }
+
+        answerElement.classList.add(
+          "disabled"
+        );
+
+      }
+    );
+
+
+    /*
+     * ----------------------------------------------------------
+     * WYNIK
+     * ----------------------------------------------------------
+     */
+
+    const result =
+      document.getElementById("result");
+
+
+    if (isCorrect) {
+
+      result.className =
+        "result good";
+
+      result.innerHTML =
+        "<strong>✓ Poprawna odpowiedź</strong>";
+
+    } else {
+
+      result.className =
+        "result bad";
+
+      result.innerHTML =
+        "<strong>✕ Niepoprawna odpowiedź</strong>" +
+        "<br><br>" +
+        buildAnswerSummary(
+          selectedAnswers,
+          correctAnswers
+        );
+
+    }
+
+
+    result.style.display =
+      "block";
+
+
+    /*
+     * ----------------------------------------------------------
+     * WYJAŚNIENIE
+     * ----------------------------------------------------------
+     */
+
+    const explanation =
+      document.getElementById(
+        "explanation"
+      );
+
+
+    if (
+      currentQuestion.explanation
+    ) {
+
+      explanation.innerHTML =
+        "<strong>Wyjaśnienie:</strong><br><br>" +
+        formatText(
+          currentQuestion.explanation
+        );
+
+      explanation.style.display =
         "block";
 
-
-    if (currentQuestion.explanation) {
-
-        explanationElement.textContent =
-            currentQuestion.explanation;
-
-    } else {
-
-        explanationElement.textContent =
-            "Brak wyjaśnienia w bazie.";
     }
 
 
-    if (currentQuestion.legalBasis) {
+    /*
+     * ----------------------------------------------------------
+     * PODSTAWA PRAWNA
+     * ----------------------------------------------------------
+     */
 
-        legalBasisTextElement.textContent =
-            currentQuestion.legalBasis;
+    const legalBasis =
+      document.getElementById(
+        "legalBasis"
+      );
 
-    } else {
 
-        legalBasisTextElement.textContent =
-            "Brak podstawy prawnej w bazie.";
+    if (
+      currentQuestion.legalBasis
+    ) {
+
+      legalBasis.innerHTML =
+        "<strong>Podstawa prawna:</strong><br><br>" +
+        formatText(
+          currentQuestion.legalBasis
+        );
+
+      legalBasis.style.display =
+        "block";
+
     }
-}
 
 
-/* =========================================================
-   NASTĘPNE PYTANIE
-   ========================================================= */
+    /*
+     * ----------------------------------------------------------
+     * DEBUG — UKRYTY
+     * ----------------------------------------------------------
+     *
+     * Zostawiam go w kodzie, ale użytkownik go nie widzi.
+     * Przy ewentualnym kolejnym problemie można go łatwo
+     * włączyć.
+     */
 
-function nextQuestion() {
+    const debug =
+      document.getElementById(
+        "debug"
+      );
+
+    debug.textContent =
+      "ID: " +
+      currentQuestion.id +
+      " | Poprawne: " +
+      correctAnswers.join(", ") +
+      " | Zaznaczone: " +
+      selectedAnswers.join(", ");
+
+
+    /*
+     * ----------------------------------------------------------
+     * PRZYCISK NASTĘPNEGO PYTANIA
+     * ----------------------------------------------------------
+     */
+
+    document.getElementById(
+      "checkBtn"
+    ).disabled = true;
+
+    document.getElementById(
+      "nextBtn"
+    ).disabled = false;
+
+  }
+
+
+  /*
+   * ============================================================
+   * PODSUMOWANIE ODPOWIEDZI
+   * ============================================================
+   */
+
+  function buildAnswerSummary(
+    selectedAnswers,
+    correctAnswers
+  ) {
+
+    let html = "";
+
+
+    /*
+     * Najpierw pokazujemy błędnie zaznaczone.
+     */
+
+    selectedAnswers.forEach(
+      letter => {
+
+        if (
+          !correctAnswers.includes(
+            letter
+          )
+        ) {
+
+          html +=
+            "<strong>✕ Nieprawidłowa:</strong> " +
+            escapeHtml(
+              currentQuestion.answers[letter]
+            ) +
+            "<br>";
+
+        }
+
+      }
+    );
+
+
+    /*
+     * Następnie wszystkie prawidłowe.
+     */
+
+    correctAnswers.forEach(
+      letter => {
+
+        html +=
+          "<strong>✓ Prawidłowa:</strong> " +
+          escapeHtml(
+            currentQuestion.answers[letter]
+          ) +
+          "<br>";
+
+      }
+    );
+
+
+    return html;
+
+  }
+
+
+  /*
+   * ============================================================
+   * NASTĘPNE PYTANIE
+   * ============================================================
+   */
+
+  function nextQuestion() {
+
+    if (!answered) {
+      return;
+    }
+
 
     currentQuestionIndex++;
 
+
     if (
-        currentQuestionIndex >=
-        questionOrder.length
+      currentQuestionIndex >=
+      questions.length
     ) {
 
-        finishTest();
+      renderFinished();
 
-        return;
+      return;
+
     }
 
-    showQuestion();
-}
+
+    renderQuestion();
+
+  }
 
 
-/* =========================================================
-   KONIEC TESTU
-   ========================================================= */
+  /*
+   * ============================================================
+   * KONIEC TESTU
+   * ============================================================
+   */
 
-function finishTest() {
+  function renderFinished() {
 
-    currentQuestion = null;
+    currentNumber.textContent =
+      questions.length;
 
-    questionTextElement.textContent =
-        "Koniec testu.";
+    progressBar.style.width =
+      "100%";
 
-    questionNumberElement.textContent =
-        "";
 
-    answersElement.innerHTML =
-        "";
+    const total =
+      correctCount +
+      incorrectCount;
 
-    questionImageElement.classList.add(
-        "hidden"
-    );
 
-    multiInfoElement.textContent =
-        "";
+    const percentage =
+      total > 0
+        ? Math.round(
+            (
+              correctCount /
+              total
+            ) * 100
+          )
+        : 0;
 
-    checkButton.disabled =
-        true;
 
-    nextButton.disabled =
-        true;
+    appContent.innerHTML = `
 
-    resultElement.className =
-        "correct-result";
+      <div class="card">
 
-    resultElement.style.display =
-        "block";
+        <div class="question">
+          Test zakończony
+        </div>
 
-    resultElement.innerHTML = `
-        <strong>Test zakończony.</strong>
-        <br><br>
-        Wynik: ${correctCount} poprawnych
-        z ${answeredCount} odpowiedzi.
+        <p>
+          <strong>Poprawne:</strong>
+          ${correctCount}
+        </p>
+
+        <p>
+          <strong>Błędne:</strong>
+          ${incorrectCount}
+        </p>
+
+        <p>
+          <strong>Wynik:</strong>
+          ${percentage}%
+        </p>
+
+        <div class="buttons">
+
+          <button
+            type="button"
+            id="restartBtn"
+            onclick="restartTest()"
+          >
+            Rozpocznij ponownie
+          </button>
+
+        </div>
+
+      </div>
+
     `;
 
-    showExplanation();
-
-    explanationElement.textContent =
-        "Możesz odświeżyć stronę, aby rozpocząć nowy test.";
-
-    legalBasisTextElement.textContent =
-        "";
-}
+  }
 
 
-/* =========================================================
-   ESCAPE HTML
-   ========================================================= */
+  /*
+   * ============================================================
+   * RESTART
+   * ============================================================
+   */
 
-function escapeHtml(value) {
+  function restartTest() {
+
+    questions =
+      shuffleArray(
+        questions
+      );
+
+    currentQuestionIndex =
+      0;
+
+    currentQuestion =
+      null;
+
+    answered =
+      false;
+
+    correctCount =
+      0;
+
+    incorrectCount =
+      0;
+
+    updateStats();
+
+    renderQuestion();
+
+  }
+
+
+  /*
+   * ============================================================
+   * STATYSTYKI
+   * ============================================================
+   */
+
+  function updateStats() {
+
+    correctCountElement.textContent =
+      correctCount;
+
+    incorrectCountElement.textContent =
+      incorrectCount;
+
+  }
+
+
+  /*
+   * ============================================================
+   * BŁĄD
+   * ============================================================
+   */
+
+  function showError(message) {
+
+    loading.style.display =
+      "none";
+
+
+    appContent.innerHTML = `
+
+      <div class="card">
+
+        <div class="error">
+
+          <strong>Nie udało się uruchomić testu.</strong>
+
+          <br><br>
+
+          ${escapeHtml(message)}
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  /*
+   * ============================================================
+   * FORMATOWANIE TEKSTU
+   * ============================================================
+   */
+
+  function formatText(text) {
+
+    return escapeHtml(
+      String(text)
+    )
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(/\n/g, "<br>");
+
+  }
+
+
+  /*
+   * ============================================================
+   * BEZPIECZNE HTML
+   * ============================================================
+   */
+
+  function escapeHtml(value) {
+
+    if (
+      value === null ||
+      value === undefined
+    ) {
+      return "";
+    }
 
     return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
 
 
-/* =========================================================
-   OBSŁUGA PRZYCISKÓW
-   ========================================================= */
+  function escapeAttribute(value) {
 
-checkButton.addEventListener(
-    "click",
-    checkAnswer
-);
+    return escapeHtml(value);
 
-nextButton.addEventListener(
-    "click",
-    nextQuestion
-);
+  }
 
 
-/* =========================================================
-   START
-   ========================================================= */
+  /*
+   * ============================================================
+   * START APLIKACJI
+   * ============================================================
+   */
 
-loadQuestions();
+  loadQuestions();
+
+
+  /*
+   * ============================================================
+   * SERVICE WORKER
+   * ============================================================
+   */
+
+  if (
+    "serviceWorker" in navigator
+  ) {
+
+    window.addEventListener(
+      "load",
+      () => {
+
+        navigator.serviceWorker
+          .register(
+            "service-worker.js"
+          )
+          .then(
+            registration => {
+
+              console.log(
+                "Service Worker zarejestrowany:",
+                registration.scope
+              );
+
+            }
+          )
+          .catch(
+            error => {
+
+              console.warn(
+                "Nie udało się zarejestrować Service Workera:",
+                error
+              );
+
+            }
+          );
+
+      }
+    );
+
+  }
 
 </script>
 
 </body>
 </html>
+```
