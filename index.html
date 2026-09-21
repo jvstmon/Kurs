@@ -796,15 +796,23 @@
         }
 
 
-        const correctRaw =
-          row[correctIndex];
+       const correctRaw =
+  row[correctIndex];
 
+const correctAnswers =
+  parseCorrectAnswers(
+    correctRaw
+  );
 
-        const correctAnswers =
-          parseCorrectAnswers(
-            correctRaw
-          );
-
+console.log(
+  "=== TEST POPRAWNYCH ODPOWIEDZI ===",
+  {
+    ID: id,
+    correctRaw: correctRaw,
+    correctRawString: String(correctRaw),
+    parsed: correctAnswers
+  }
+);
 
         /*
           Pytania bez poprawnej odpowiedzi
