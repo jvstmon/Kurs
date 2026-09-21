@@ -22,9 +22,7 @@
 
   <title>Testy instruktora nauki jazdy</title>
 
-  <script
-    src="https://cdn.sheetjs.com/xlsx-0.18.5/package/dist/xlsx.full.min.js">
-  </script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.18.5/package/dist/xlsx.full.min.js"></script>
 
   <style>
 
@@ -343,6 +341,11 @@
     <p>Sprawdź swoją wiedzę</p>
   </header>
 
+
+  <!-- ======================================================
+       START
+       ====================================================== -->
+
   <section id="startScreen" class="screen active">
 
     <div class="card">
@@ -377,6 +380,7 @@
 
     </div>
 
+
     <div class="card">
 
       <h3>Statystyki</h3>
@@ -384,36 +388,50 @@
       <div class="stats">
 
         <div class="stat">
+
           <div
             id="statAnswered"
             class="stat-number"
-          >0</div>
+          >
+            0
+          </div>
 
           <div class="stat-label">
             rozwiązanych
           </div>
+
         </div>
 
+
         <div class="stat">
+
           <div
             id="statCorrect"
             class="stat-number"
-          >0</div>
+          >
+            0
+          </div>
 
           <div class="stat-label">
             poprawnych
           </div>
+
         </div>
 
+
         <div class="stat">
+
           <div
             id="statAccuracy"
             class="stat-number"
-          >0%</div>
+          >
+            0%
+          </div>
 
           <div class="stat-label">
             skuteczność
           </div>
+
         </div>
 
       </div>
@@ -422,6 +440,11 @@
 
   </section>
 
+
+  <!-- ======================================================
+       LOADING
+       ====================================================== -->
+
   <section
     id="loadingScreen"
     class="screen"
@@ -429,13 +452,22 @@
 
     <div class="card loading">
 
-      <h2>Wczytywanie bazy pytań...</h2>
+      <h2>
+        Wczytywanie bazy pytań...
+      </h2>
 
-      <p>Chwileczkę.</p>
+      <p>
+        Chwileczkę.
+      </p>
 
     </div>
 
   </section>
+
+
+  <!-- ======================================================
+       QUIZ
+       ====================================================== -->
 
   <section
     id="quizScreen"
@@ -451,6 +483,7 @@
         Pytanie 1 z 20
       </div>
 
+
       <div class="progress">
 
         <div
@@ -460,10 +493,12 @@
 
       </div>
 
+
       <div
         id="questionText"
         class="question-text"
       ></div>
+
 
       <img
         id="questionImage"
@@ -472,10 +507,12 @@
         alt=""
       >
 
+
       <div
         id="answersContainer"
         class="answers"
       ></div>
+
 
       <div class="buttons">
 
@@ -485,6 +522,7 @@
         >
           Sprawdź odpowiedź
         </button>
+
 
         <button
           id="nextButton"
@@ -496,6 +534,7 @@
 
       </div>
 
+
       <div
         id="resultContainer"
         style="display:none;"
@@ -505,6 +544,11 @@
 
   </section>
 
+
+  <!-- ======================================================
+       FINISH
+       ====================================================== -->
+
   <section
     id="finishScreen"
     class="screen"
@@ -512,7 +556,9 @@
 
     <div class="card">
 
-      <h2>Test zakończony</h2>
+      <h2>
+        Test zakończony
+      </h2>
 
       <div id="finalResult"></div>
 
@@ -524,6 +570,7 @@
         >
           Nowy test
         </button>
+
 
         <button
           id="backToStartButton"
@@ -537,6 +584,11 @@
     </div>
 
   </section>
+
+
+  <!-- ======================================================
+       ERROR
+       ====================================================== -->
 
   <section
     id="errorScreen"
@@ -563,6 +615,7 @@
 
   const QUESTIONS_PER_TEST = 20;
 
+
   let allQuestions = [];
 
   let testQuestions = [];
@@ -575,6 +628,10 @@
 
   let questionAnswered = false;
 
+
+  /* ==========================================================
+     ELEMENTY
+     ========================================================== */
 
   const startScreen =
     document.getElementById("startScreen");
@@ -631,6 +688,10 @@
     document.getElementById("finalResult");
 
 
+  /* ==========================================================
+     EKRANY
+     ========================================================== */
+
   function showScreen(screen) {
 
     document
@@ -643,33 +704,24 @@
   }
 
 
-  /*
-   * ==========================================================
-   * POPRAWNE ODPOWIEDZI
-   * ==========================================================
-   *
-   * W Excelu wpisujemy:
-   *
-   * 1
-   * 2
-   * 3
-   * 1|2
-   * 1|3
-   * 2|3
-   * 1|2|3
-   *
-   * Funkcja zwraca indeksy JavaScript:
-   *
-   * 1     -> [0]
-   * 2     -> [1]
-   * 3     -> [2]
-   * 1|2   -> [0,1]
-   * 1|3   -> [0,2]
-   * 2|3   -> [1,2]
-   * 1|2|3 -> [0,1,2]
-   *
-   * Obsługiwane są również stare separatory.
-   */
+  /* ==========================================================
+     POPRAWNE ODPOWIEDZI
+     ==========================================================
+
+     Excel:
+
+       1       = A
+       2       = B
+       3       = C
+
+       1|2     = A + B
+       1|3     = A + C
+       2|3     = B + C
+       1|2|3   = A + B + C
+
+     Ważne:
+     "|" jest JEDYNYM separatorem.
+     ========================================================== */
 
   function parseCorrectAnswers(value) {
 
@@ -680,154 +732,177 @@
       return [];
     }
 
-    let text = String(value)
-      .trim();
+
+    const text =
+      String(value).trim();
+
 
     if (!text) {
       return [];
     }
 
-    /*
-     * Jeżeli Excel zwrócił liczbę,
-     * np. 2.3, nadal chcemy uzyskać 2 i 3.
-     */
-
-    text = text
-      .replace(/,/g, "|")
-      .replace(/;/g, "|")
-      .replace(/\//g, "|")
-      .replace(/\\/g, "|")
-      .replace(/\s+/g, "|");
 
     /*
-     * Ważne:
-     *
-     * Nie używamy split("|") jako jedynego sposobu.
-     * Szukamy wszystkich wystąpień cyfr 1, 2 i 3.
-     *
-     * Dzięki temu:
-     *
-     * 2|3 -> 2,3
-     * 2,3 -> 2,3
-     * 2.3 -> 2,3
-     * " 2 | 3 " -> 2,3
+     * Dzielimy dokładnie po "|".
      */
 
-    const matches =
-      text.match(/[123]/g);
+    const parts =
+      text.split("|");
 
-    if (!matches) {
-      return [];
-    }
 
-    const numbers =
-      matches
-        .map(value => Number(value))
-        .filter(
-          value =>
-            value === 1 ||
-            value === 2 ||
-            value === 3
+    const answers = [];
+
+
+    parts.forEach(part => {
+
+      const number =
+        Number(
+          String(part).trim()
         );
 
-    const unique =
-      [...new Set(numbers)];
 
-    unique.sort(
+      if (
+        number === 1 ||
+        number === 2 ||
+        number === 3
+      ) {
+
+        answers.push(
+          number - 1
+        );
+
+      }
+
+    });
+
+
+    /*
+     * Usuwamy ewentualne duplikaty
+     * i sortujemy.
+     */
+
+    return [
+      ...new Set(answers)
+    ].sort(
       (a, b) => a - b
     );
 
-    return unique.map(
-      value => value - 1
-    );
   }
 
 
-  /*
-   * ==========================================================
-   * NORMALIZACJA
-   * ==========================================================
-   */
+  /* ==========================================================
+     ODCZYT KOMÓRKI
+     ========================================================== */
 
-  function normalizeQuestion(
+  function getCellValue(
+    worksheet,
     row,
-    rawCorrectValue = null
+    column
   ) {
 
+    const address =
+      XLSX.utils.encode_cell({
+        r: row,
+        c: column
+      });
+
+
+    const cell =
+      worksheet[address];
+
+
+    if (!cell) {
+      return "";
+    }
+
+
     /*
-     * Najpierw korzystamy z bezpośredniej
-     * wartości komórki POPRAWNE.
-     *
-     * Dopiero jeżeli jej nie ma,
-     * korzystamy z row.POPRAWNE.
+     * v = rzeczywista wartość komórki.
      */
 
-    const correctValue =
-      rawCorrectValue !== null &&
-      rawCorrectValue !== undefined &&
-      rawCorrectValue !== ""
-        ? rawCorrectValue
-        : row.POPRAWNE;
+    if (
+      cell.v !== undefined &&
+      cell.v !== null
+    ) {
 
-    const correctAnswers =
-      parseCorrectAnswers(
-        correctValue
-      );
+      return cell.v;
 
-    return {
+    }
 
-      id:
-        String(
-          row.ID ?? ""
-        ).trim(),
 
-      question:
-        String(
-          row.PYTANIE ?? ""
-        ).trim(),
+    /*
+     * w = wartość wyświetlana.
+     */
 
-      answers: [
+    if (
+      cell.w !== undefined &&
+      cell.w !== null
+    ) {
 
-        String(
-          row.ODPOWIEDZ_1 ?? ""
-        ).trim(),
+      return cell.w;
 
-        String(
-          row.ODPOWIEDZ_2 ?? ""
-        ).trim(),
+    }
 
-        String(
-          row.ODPOWIEDZ_3 ?? ""
-        ).trim()
 
-      ],
+    return "";
 
-      correctAnswers,
-
-      explanation:
-        String(
-          row.WYJAŚNIENIE ?? ""
-        ).trim(),
-
-      legalBasis:
-        String(
-          row.PODSTAWA_PRAWNA ?? ""
-        ).trim(),
-
-      image:
-        String(
-          row.OBRAZ ?? ""
-        ).trim()
-
-    };
   }
 
 
-  /*
-   * ==========================================================
-   * WCZYTYWANIE EXCELA
-   * ==========================================================
-   */
+  /* ==========================================================
+     ZNAJDOWANIE KOLUMNY
+     ========================================================== */
+
+  function findColumn(
+    worksheet,
+    headerRow,
+    range,
+    expectedName
+  ) {
+
+    const wanted =
+      expectedName
+        .trim()
+        .toUpperCase();
+
+
+    for (
+      let column = range.s.c;
+      column <= range.e.c;
+      column++
+    ) {
+
+      const value =
+        String(
+          getCellValue(
+            worksheet,
+            headerRow,
+            column
+          )
+        )
+        .trim()
+        .toUpperCase();
+
+
+      if (
+        value === wanted
+      ) {
+
+        return column;
+
+      }
+
+    }
+
+
+    return -1;
+
+  }
+
+
+  /* ==========================================================
+     WCZYTYWANIE EXCELA
+     ========================================================== */
 
   async function loadQuestions() {
 
@@ -837,9 +912,6 @@
         loadingScreen
       );
 
-      /*
-       * cache busting
-       */
 
       const response =
         await fetch(
@@ -849,26 +921,20 @@
           }
         );
 
+
       if (!response.ok) {
 
         throw new Error(
-          `Nie udało się pobrać ${EXCEL_FILE}. ` +
+          `Nie udało się pobrać pliku ${EXCEL_FILE}. ` +
           `Kod HTTP: ${response.status}`
         );
 
       }
 
+
       const arrayBuffer =
         await response.arrayBuffer();
 
-
-      /*
-       * Odczytujemy plik.
-       *
-       * raw:true jest tutaj celowe.
-       * Chcemy dostać rzeczywistą zawartość
-       * komórek, a nie sformatowaną wersję.
-       */
 
       const workbook =
         XLSX.read(
@@ -879,19 +945,22 @@
           }
         );
 
+
       if (
         !workbook.SheetNames ||
         workbook.SheetNames.length === 0
       ) {
 
         throw new Error(
-          "Plik Excel nie zawiera arkusza."
+          "Plik Excel nie zawiera żadnego arkusza."
         );
 
       }
 
+
       const sheetName =
         workbook.SheetNames[0];
+
 
       const worksheet =
         workbook.Sheets[
@@ -899,196 +968,352 @@
         ];
 
 
-      /*
-       * Najpierw pobieramy normalne dane.
-       */
-
-      const rows =
-        XLSX.utils.sheet_to_json(
-          worksheet,
-          {
-            defval: "",
-            raw: true
-          }
-        );
-
-
-      if (!rows.length) {
+      if (
+        !worksheet["!ref"]
+      ) {
 
         throw new Error(
-          "Arkusz Excel jest pusty."
+          "Pierwszy arkusz Excela jest pusty."
         );
 
       }
 
-
-      /*
-       * ======================================================
-       * USTALAMY KOLUMNĘ POPRAWNE
-       * ======================================================
-       */
 
       const range =
         XLSX.utils.decode_range(
           worksheet["!ref"]
         );
 
-      let headerRow = null;
 
-      for (
-        let column = range.s.c;
-        column <= range.e.c;
-        column++
+      /*
+       * Zakładamy, że pierwszy wiersz
+       * arkusza zawiera nagłówki.
+       */
+
+      const headerRow =
+        range.s.r;
+
+
+      /*
+       * Szukamy wszystkich potrzebnych kolumn.
+       */
+
+      const columns = {
+
+        ID:
+          findColumn(
+            worksheet,
+            headerRow,
+            range,
+            "ID"
+          ),
+
+        PYTANIE:
+          findColumn(
+            worksheet,
+            headerRow,
+            range,
+            "PYTANIE"
+          ),
+
+        ODPOWIEDZ_1:
+          findColumn(
+            worksheet,
+            headerRow,
+            range,
+            "ODPOWIEDZ_1"
+          ),
+
+        ODPOWIEDZ_2:
+          findColumn(
+            worksheet,
+            headerRow,
+            range,
+            "ODPOWIEDZ_2"
+          ),
+
+        ODPOWIEDZ_3:
+          findColumn(
+            worksheet,
+            headerRow,
+            range,
+            "ODPOWIEDZ_3"
+          ),
+
+        POPRAWNE:
+          findColumn(
+            worksheet,
+            headerRow,
+            range,
+            "POPRAWNE"
+          ),
+
+        PODSTAWA_PRAWNA:
+          findColumn(
+            worksheet,
+            headerRow,
+            range,
+            "PODSTAWA_PRAWNA"
+          ),
+
+        WYJAŚNIENIE:
+          findColumn(
+            worksheet,
+            headerRow,
+            range,
+            "WYJAŚNIENIE"
+          ),
+
+        OBRAZ:
+          findColumn(
+            worksheet,
+            headerRow,
+            range,
+            "OBRAZ"
+          )
+
+      };
+
+
+      /*
+       * POPRAWNE jest obowiązkowe.
+       */
+
+      if (
+        columns.POPRAWNE === -1
       ) {
 
-        const address =
-          XLSX.utils.encode_cell({
-            r: range.s.r,
-            c: column
-          });
+        throw new Error(
+          "Nie znaleziono kolumny POPRAWNE w Excelu."
+        );
 
-        const cell =
-          worksheet[address];
+      }
 
-        const value =
-          cell
-            ? String(
-                cell.v ?? ""
-              ).trim()
-            : "";
 
-        if (
-          value.toUpperCase() ===
-          "POPRAWNE"
-        ) {
+      if (
+        columns.PYTANIE === -1
+      ) {
 
-          headerRow = column;
-
-          break;
-
-        }
+        throw new Error(
+          "Nie znaleziono kolumny PYTANIE w Excelu."
+        );
 
       }
 
 
       /*
-       * Jeżeli znaleźliśmy POPRAWNE,
-       * odczytujemy tę komórkę bezpośrednio
-       * dla każdego wiersza.
+       * Czytamy arkusz BEZPOŚREDNIO,
+       * wiersz po wierszu.
+       *
+       * Dzięki temu nie ma żadnego
+       * przesuwania indeksów przez
+       * sheet_to_json().
        */
 
-      allQuestions =
-        rows
-          .map(
-            (row, rowIndex) => {
+      const questions = [];
 
-              let rawCorrectValue =
-                row.POPRAWNE;
 
-              if (
-                headerRow !== null
-              ) {
+      for (
+        let row = headerRow + 1;
+        row <= range.e.r;
+        row++
+      ) {
 
-                const excelRow =
-                  range.s.r +
-                  1 +
-                  rowIndex;
+        const question =
+          String(
+            getCellValue(
+              worksheet,
+              row,
+              columns.PYTANIE
+            )
+          ).trim();
 
-                const cellAddress =
-                  XLSX.utils.encode_cell({
-                    r: excelRow,
-                    c: headerRow
-                  });
 
-                const cell =
-                  worksheet[
-                    cellAddress
-                  ];
+        /*
+         * Puste wiersze pomijamy.
+         */
 
-                if (cell) {
+        if (!question) {
+          continue;
+        }
 
-                  /*
-                   * cell.v = rzeczywista wartość
-                   * cell.w = wartość wyświetlana
-                   *
-                   * Najpierw próbujemy v.
-                   * Jeżeli jest pusta, używamy w.
-                   */
 
-                  rawCorrectValue =
-                    cell.v !== undefined &&
-                    cell.v !== null
-                      ? cell.v
-                      : cell.w ?? "";
+        const id =
+          String(
+            getCellValue(
+              worksheet,
+              row,
+              columns.ID
+            )
+          ).trim();
 
-                }
 
-              }
-
-              const question =
-                normalizeQuestion(
+        const answer1 =
+          String(
+            columns.ODPOWIEDZ_1 !== -1
+              ? getCellValue(
+                  worksheet,
                   row,
-                  rawCorrectValue
-                );
+                  columns.ODPOWIEDZ_1
+                )
+              : ""
+          ).trim();
 
-              /*
-               * Zapisujemy również tekstową
-               * reprezentację klucza.
-               *
-               * Przykład:
-               *
-               * [1,2] -> "2|3"
-               */
 
-              question.correctKey =
-                question.correctAnswers
-                  .map(
-                    index =>
-                      index + 1
-                  )
-                  .join("|");
+        const answer2 =
+          String(
+            columns.ODPOWIEDZ_2 !== -1
+              ? getCellValue(
+                  worksheet,
+                  row,
+                  columns.ODPOWIEDZ_2
+                )
+              : ""
+          ).trim();
 
-              return question;
 
-            }
-          )
-          .filter(
-            question =>
-              question.question
+        const answer3 =
+          String(
+            columns.ODPOWIEDZ_3 !== -1
+              ? getCellValue(
+                  worksheet,
+                  row,
+                  columns.ODPOWIEDZ_3
+                )
+              : ""
+          ).trim();
+
+
+        /*
+         * ====================================================
+         * NAJWAŻNIEJSZA CZĘŚĆ
+         * ====================================================
+         *
+         * Bierzemy dokładnie zawartość
+         * komórki POPRAWNE.
+         *
+         * Przykład:
+         *
+         * Excel: 2|3
+         *
+         * rawCorrectValue = "2|3"
+         *
+         * correctAnswers = [1,2]
+         */
+
+        const rawCorrectValue =
+          getCellValue(
+            worksheet,
+            row,
+            columns.POPRAWNE
           );
 
 
-      /*
-       * Jeżeli jakieś pytanie nie ma klucza,
-       * pokazujemy ostrzeżenie w konsoli.
-       */
+        const correctAnswers =
+          parseCorrectAnswers(
+            rawCorrectValue
+          );
 
-      const invalidQuestions =
-        allQuestions.filter(
-          question =>
-            question.correctAnswers.length === 0
-        );
+
+        const explanation =
+          String(
+            columns.WYJAŚNIENIE !== -1
+              ? getCellValue(
+                  worksheet,
+                  row,
+                  columns.WYJAŚNIENIE
+                )
+              : ""
+          ).trim();
+
+
+        const legalBasis =
+          String(
+            columns.PODSTAWA_PRAWNA !== -1
+              ? getCellValue(
+                  worksheet,
+                  row,
+                  columns.PODSTAWA_PRAWNA
+                )
+              : ""
+          ).trim();
+
+
+        const image =
+          String(
+            columns.OBRAZ !== -1
+              ? getCellValue(
+                  worksheet,
+                  row,
+                  columns.OBRAZ
+                )
+              : ""
+          ).trim();
+
+
+        questions.push({
+
+          id,
+
+          question,
+
+          answers: [
+            answer1,
+            answer2,
+            answer3
+          ],
+
+          /*
+           * 0 = A
+           * 1 = B
+           * 2 = C
+           */
+
+          correctAnswers,
+
+          /*
+           * Zachowujemy też dokładną
+           * wartość z Excela.
+           */
+
+          rawCorrect:
+            String(
+              rawCorrectValue ?? ""
+            ).trim(),
+
+          explanation,
+
+          legalBasis,
+
+          image
+
+        });
+
+      }
+
+
+      allQuestions =
+        questions;
+
 
       if (
-        invalidQuestions.length
+        allQuestions.length === 0
       ) {
 
-        console.warn(
-          "Pytania bez rozpoznanej poprawnej odpowiedzi:",
-          invalidQuestions.map(
-            question => ({
-              ID: question.id,
-              pytanie:
-                question.question
-            })
-          )
+        throw new Error(
+          "Nie znaleziono żadnych pytań w arkuszu."
         );
 
       }
 
 
       /*
-       * Kontrola kluczy.
+       * Kontrola.
+       *
+       * Dla 2|3 zobaczymy:
+       *
+       * POPRAWNE = 2|3
+       * INDEKSY = [1,2]
        */
 
       console.table(
@@ -1098,9 +1323,9 @@
               question.id,
 
             POPRAWNE:
-              question.correctKey,
+              question.rawCorrect,
 
-            "indeksy JS":
+            "JS":
               JSON.stringify(
                 question.correctAnswers
               )
@@ -1109,23 +1334,21 @@
       );
 
 
-      console.log(
-        "Wczytano pytań:",
-        allQuestions.length
-      );
-
-
       updateStatistics();
+
 
       showScreen(
         startScreen
       );
 
+
     } catch (error) {
 
       console.error(
+        "Błąd wczytywania bazy:",
         error
       );
+
 
       errorContainer.innerHTML = `
         <strong>
@@ -1146,6 +1369,7 @@
         co index.html.
       `;
 
+
       showScreen(
         errorScreen
       );
@@ -1155,16 +1379,15 @@
   }
 
 
-  /*
-   * ==========================================================
-   * LOSOWANIE
-   * ==========================================================
-   */
+  /* ==========================================================
+     LOSOWANIE
+     ========================================================== */
 
   function shuffle(array) {
 
     const result =
       [...array];
+
 
     for (
       let i = result.length - 1;
@@ -1178,6 +1401,7 @@
           (i + 1)
         );
 
+
       [
         result[i],
         result[j]
@@ -1188,7 +1412,9 @@
 
     }
 
+
     return result;
+
   }
 
 
@@ -1199,6 +1425,7 @@
         allQuestions
       );
 
+
     testQuestions =
       shuffled.slice(
         0,
@@ -1208,18 +1435,19 @@
         )
       );
 
-    currentQuestionIndex = 0;
+
+    currentQuestionIndex =
+      0;
+
 
     showQuestion();
 
   }
 
 
-  /*
-   * ==========================================================
-   * PYTANIE
-   * ==========================================================
-   */
+  /* ==========================================================
+     POKAZANIE PYTANIA
+     ========================================================== */
 
   function showQuestion() {
 
@@ -1228,9 +1456,11 @@
         currentQuestionIndex
       ];
 
+
     selectedAnswers = [];
 
     questionAnswered = false;
+
 
     resultContainer.style.display =
       "none";
@@ -1238,11 +1468,13 @@
     resultContainer.innerHTML =
       "";
 
+
     confirmButton.style.display =
       "inline-block";
 
     confirmButton.disabled =
       false;
+
 
     nextButton.style.display =
       "none";
@@ -1250,12 +1482,6 @@
 
     questionText.textContent =
       currentQuestion.question;
-
-    console.log("=== DEBUG PYTANIE ===");
-console.log("ID:", currentQuestion.id);
-console.log("POPRAWNE RAW:", currentQuestion.correctKey);
-console.log("POPRAWNE PARSED:", currentQuestion.correctAnswers);
-console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
 
 
     progressText.textContent =
@@ -1272,15 +1498,17 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
           currentQuestionIndex + 1
         ) /
         testQuestions.length
-      ) *
-      100;
+      ) * 100;
+
 
     progressBar.style.width =
       `${progress}%`;
 
 
     /*
-     * Obraz
+     * ========================================================
+     * OBRAZ
+     * ========================================================
      */
 
     if (
@@ -1292,6 +1520,7 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
 
       questionImage.style.display =
         "block";
+
 
       questionImage.onerror =
         function() {
@@ -1314,79 +1543,110 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
 
 
     /*
-     * Odpowiedzi
+     * ========================================================
+     * ODPOWIEDZI
+     * ========================================================
      */
 
     answersContainer.innerHTML =
       "";
 
-    currentQuestion.answers
-      .forEach(
-        (
-          answer,
-          index
-        ) => {
 
-          if (!answer) {
-            return;
-          }
+    currentQuestion.answers.forEach(
+      (
+        answer,
+        index
+      ) => {
 
-          const label =
-            document.createElement(
-              "label"
-            );
+        /*
+         * Jeżeli odpowiedź jest pusta,
+         * nie wyświetlamy jej.
+         */
 
-          label.className =
-            "answer";
-
-
-          const checkbox =
-            document.createElement(
-              "input"
-            );
-
-          checkbox.type =
-            "checkbox";
-
-          checkbox.value =
-            String(index);
-
-          checkbox.dataset.index =
-            String(index);
-
-
-          checkbox.addEventListener(
-            "change",
-            handleAnswerSelection
-          );
-
-
-          const text =
-            document.createElement(
-              "div"
-            );
-
-          text.className =
-            "answer-text";
-
-          text.textContent =
-            answer;
-
-
-          label.appendChild(
-            checkbox
-          );
-
-          label.appendChild(
-            text
-          );
-
-          answersContainer.appendChild(
-            label
-          );
-
+        if (!answer) {
+          return;
         }
-      );
+
+
+        const label =
+          document.createElement(
+            "label"
+          );
+
+
+        label.className =
+          "answer";
+
+
+        /*
+         * BARDZO WAŻNE:
+         *
+         * label dostaje rzeczywisty
+         * indeks odpowiedzi.
+         *
+         * A = 0
+         * B = 1
+         * C = 2
+         */
+
+        label.dataset.answerIndex =
+          String(index);
+
+
+        const checkbox =
+          document.createElement(
+            "input"
+          );
+
+
+        checkbox.type =
+          "checkbox";
+
+
+        checkbox.value =
+          String(index);
+
+
+        checkbox.dataset.answerIndex =
+          String(index);
+
+
+        checkbox.addEventListener(
+          "change",
+          handleAnswerSelection
+        );
+
+
+        const text =
+          document.createElement(
+            "div"
+          );
+
+
+        text.className =
+          "answer-text";
+
+
+        text.textContent =
+          answer;
+
+
+        label.appendChild(
+          checkbox
+        );
+
+
+        label.appendChild(
+          text
+        );
+
+
+        answersContainer.appendChild(
+          label
+        );
+
+      }
+    );
 
 
     showScreen(
@@ -1396,11 +1656,9 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
   }
 
 
-  /*
-   * ==========================================================
-   * ZAZNACZANIE
-   * ==========================================================
-   */
+  /* ==========================================================
+     ZAZNACZANIE ODPOWIEDZI
+     ========================================================== */
 
   function handleAnswerSelection(
     event
@@ -1412,9 +1670,10 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
       return;
     }
 
+
     const index =
       Number(
-        event.target.value
+        event.target.dataset.answerIndex
       );
 
 
@@ -1452,11 +1711,9 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
   }
 
 
-  /*
-   * ==========================================================
-   * PORÓWNANIE
-   * ==========================================================
-   */
+  /* ==========================================================
+     PORÓWNANIE
+     ========================================================== */
 
   function answersAreEqual(
     selected,
@@ -1465,14 +1722,13 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
 
     const selectedSorted =
       [...selected]
-        .map(Number)
         .sort(
           (a, b) => a - b
         );
 
+
     const correctSorted =
       [...correct]
-        .map(Number)
         .sort(
           (a, b) => a - b
         );
@@ -1507,14 +1763,13 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
 
 
     return true;
+
   }
 
 
-  /*
-   * ==========================================================
-   * SPRAWDZANIE
-   * ==========================================================
-   */
+  /* ==========================================================
+     SPRAWDZANIE ODPOWIEDZI
+     ========================================================== */
 
   function checkAnswer() {
 
@@ -1538,21 +1793,29 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
     }
 
 
-    questionAnswered = true;
+    questionAnswered =
+      true;
 
+
+    /*
+     * Pobieramy bezpośrednio klucz
+     * zapisany dla aktualnego pytania.
+     */
 
     const correctAnswers =
-      [...currentQuestion.correctAnswers]
-        .sort(
-          (a, b) => a - b
-        );
+      [
+        ...currentQuestion.correctAnswers
+      ].sort(
+        (a, b) => a - b
+      );
 
 
     const selected =
-      [...selectedAnswers]
-        .sort(
-          (a, b) => a - b
-        );
+      [
+        ...selectedAnswers
+      ].sort(
+        (a, b) => a - b
+      );
 
 
     const isCorrect =
@@ -1563,7 +1826,14 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
 
 
     /*
-     * Kolorowanie odpowiedzi
+     * ========================================================
+     * KOLOROWANIE
+     * ========================================================
+     *
+     * Nie używamy tutaj indeksu
+     * NodeList.
+     *
+     * Bierzemy data-answer-index.
      */
 
     const labels =
@@ -1573,10 +1843,13 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
 
 
     labels.forEach(
-      (
-        label,
-        index
-      ) => {
+      label => {
+
+        const answerIndex =
+          Number(
+            label.dataset.answerIndex
+          );
+
 
         const checkbox =
           label.querySelector(
@@ -1586,15 +1859,20 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
 
         const wasSelected =
           selected.includes(
-            index
+            answerIndex
           );
 
 
         const isActuallyCorrect =
           correctAnswers.includes(
-            index
+            answerIndex
           );
 
+
+        /*
+         * Poprawna odpowiedź:
+         * zielona.
+         */
 
         if (
           isActuallyCorrect
@@ -1607,6 +1885,11 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
         }
 
 
+        /*
+         * Zaznaczona, ale błędna:
+         * czerwona.
+         */
+
         if (
           wasSelected &&
           !isActuallyCorrect
@@ -1618,6 +1901,11 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
 
         }
 
+
+        /*
+         * Poprawna, ale niezaznaczona:
+         * pomarańczowa.
+         */
 
         if (
           !wasSelected &&
@@ -1652,8 +1940,10 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
     confirmButton.disabled =
       true;
 
+
     confirmButton.style.display =
       "none";
+
 
     nextButton.style.display =
       "inline-block";
@@ -1661,11 +1951,9 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
   }
 
 
-  /*
-   * ==========================================================
-   * WYNIK
-   * ==========================================================
-   */
+  /* ==========================================================
+     WYNIK
+     ========================================================== */
 
   function showResult(
     isCorrect
@@ -1745,11 +2033,9 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
   }
 
 
-  /*
-   * ==========================================================
-   * NASTĘPNE
-   * ==========================================================
-   */
+  /* ==========================================================
+     NASTĘPNE PYTANIE
+     ========================================================== */
 
   function nextQuestion() {
 
@@ -1773,11 +2059,9 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
   }
 
 
-  /*
-   * ==========================================================
-   * KONIEC
-   * ==========================================================
-   */
+  /* ==========================================================
+     KONIEC TESTU
+     ========================================================== */
 
   function finishTest() {
 
@@ -1793,6 +2077,7 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
             stats.answers[
               question.id
             ];
+
 
           return (
             saved &&
@@ -1831,6 +2116,7 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
 
         </div>
 
+
         <div class="stat">
 
           <div class="stat-number">
@@ -1842,6 +2128,7 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
           </div>
 
         </div>
+
 
         <div class="stat">
 
@@ -1862,6 +2149,7 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
 
     updateStatistics();
 
+
     showScreen(
       finishScreen
     );
@@ -1869,11 +2157,9 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
   }
 
 
-  /*
-   * ==========================================================
-   * STATYSTYKI
-   * ==========================================================
-   */
+  /* ==========================================================
+     STATYSTYKI
+     ========================================================== */
 
   function getStatistics() {
 
@@ -2047,11 +2333,9 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
   }
 
 
-  /*
-   * ==========================================================
-   * TEKST
-   * ==========================================================
-   */
+  /* ==========================================================
+     TEKST
+     ========================================================== */
 
   function formatText(
     text
@@ -2098,11 +2382,9 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
   }
 
 
-  /*
-   * ==========================================================
-   * EVENTY
-   * ==========================================================
-   */
+  /* ==========================================================
+     EVENTY
+     ========================================================== */
 
   startButton.addEventListener(
     "click",
@@ -2119,6 +2401,7 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
         return;
 
       }
+
 
       createTest();
 
@@ -2162,11 +2445,9 @@ console.log("POPRAWNE JSON:", JSON.stringify(currentQuestion.correctAnswers));
   );
 
 
-  /*
-   * ==========================================================
-   * START
-   * ==========================================================
-   */
+  /* ==========================================================
+     START APLIKACJI
+     ========================================================== */
 
   loadQuestions();
 
