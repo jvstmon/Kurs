@@ -1,29 +1,31 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#173b2a">
-  <meta name="description" content="Testy dla kandydatów na instruktorów nauki jazdy">
-  <title>Kurs instruktora — Testy</title>
 
-  <!-- Biblioteka do odczytu plików Excel -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="theme-color"
+    content="#173b2a"
+  >
+
+  <meta
+    name="description"
+    content="Testy dla kandydatów na instruktorów nauki jazdy"
+  >
+
+  <title>Testy instruktora nauki jazdy</title>
+
+  <script
+    src="https://cdn.sheetjs.com/xlsx-0.18.5/package/dist/xlsx.full.min.js">
+  </script>
 
   <style>
-    :root {
-      --green: #173b2a;
-      --green-light: #24583f;
-      --cream: #f5f1e8;
-      --white: #ffffff;
-      --text: #202520;
-      --muted: #69716b;
-      --border: #d9ded9;
-      --correct: #237a4b;
-      --wrong: #b33a3a;
-      --shadow: 0 10px 30px rgba(23, 59, 42, 0.10);
-      --radius: 18px;
-    }
 
     * {
       box-sizing: border-box;
@@ -31,38 +33,41 @@
 
     body {
       margin: 0;
-      min-height: 100vh;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--cream);
-      color: var(--text);
-    }
-
-    button {
-      font: inherit;
+      padding: 0;
+      background: #f3f5f2;
+      color: #1f2924;
+      font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
     }
 
     .app {
-      width: min(900px, calc(100% - 32px));
+      width: 100%;
+      max-width: 900px;
       margin: 0 auto;
-      padding: 32px 0 50px;
+      padding: 20px;
     }
 
     header {
-      margin-bottom: 24px;
+      background: #173b2a;
+      color: white;
+      padding: 22px;
+      border-radius: 18px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     }
 
-    .brand {
-      color: var(--green);
-      font-size: 14px;
-      font-weight: 800;
-      letter-spacing: .08em;
-      text-transform: uppercase;
+    header h1 {
+      margin: 0 0 6px 0;
+      font-size: 24px;
     }
 
-    h1 {
-      margin: 6px 0 0;
-      font-size: clamp(28px, 5vw, 42px);
-      line-height: 1.05;
+    header p {
+      margin: 0;
+      opacity: 0.85;
     }
 
     .screen {
@@ -74,898 +79,1163 @@
     }
 
     .card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: clamp(22px, 5vw, 38px);
+      background: white;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+      margin-bottom: 20px;
     }
 
-    .start-card {
-      text-align: center;
+    .start-title {
+      font-size: 26px;
+      margin-top: 0;
     }
 
-    .start-card p {
-      color: var(--muted);
-      line-height: 1.6;
-      max-width: 620px;
-      margin: 12px auto 28px;
-    }
-
-    .status {
-      margin-top: 18px;
-      padding: 12px 16px;
+    button {
+      border: none;
       border-radius: 12px;
-      background: #eef2ee;
-      color: var(--muted);
-      font-size: 14px;
+      padding: 13px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s ease;
     }
 
-    .status.error {
-      background: #faeaea;
-      color: var(--wrong);
+    button:hover {
+      transform: translateY(-1px);
     }
 
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      align-items: center;
-      margin-bottom: 18px;
-      color: var(--muted);
-      font-size: 14px;
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      transform: none;
     }
 
-    .progress {
-      height: 7px;
-      background: #e2e7e3;
-      border-radius: 99px;
-      overflow: hidden;
-      margin-bottom: 28px;
+    .primary {
+      background: #173b2a;
+      color: white;
     }
 
-    .progress-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--green);
-      transition: width .25s ease;
+    .secondary {
+      background: #e5ebe7;
+      color: #173b2a;
     }
 
     .question-number {
-      color: var(--green);
-      font-weight: 800;
+      color: #64736a;
+      font-size: 14px;
+      font-weight: 600;
       margin-bottom: 10px;
     }
 
-    .question {
-      font-size: clamp(21px, 4vw, 29px);
-      line-height: 1.3;
+    .question-text {
+      font-size: 23px;
+      line-height: 1.4;
       font-weight: 700;
-      margin: 0 0 25px;
+      margin-bottom: 24px;
     }
 
     .answers {
-      display: grid;
+      display: flex;
+      flex-direction: column;
       gap: 12px;
     }
 
     .answer {
-      position: relative;
-    }
-
-    .answer input {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .answer label {
-      display: block;
-      cursor: pointer;
-      border: 2px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px;
+      border: 2px solid #dce3de;
       border-radius: 14px;
-      padding: 17px 18px;
-      line-height: 1.45;
-      transition: .15s ease;
+      cursor: pointer;
+      transition: 0.15s ease;
       background: white;
     }
 
-    .answer label:hover {
-      border-color: var(--green-light);
-      background: #f8faf8;
+    .answer:hover {
+      border-color: #9fb2a5;
+      background: #fafcfb;
     }
 
-    .answer input:checked + label {
-      border-color: var(--green);
-      background: #edf4ef;
-      box-shadow: inset 0 0 0 1px var(--green);
-    }
-
-    .answer-letter {
-      display: inline-flex;
-      width: 29px;
-      height: 29px;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid var(--border);
-      border-radius: 50%;
-      margin-right: 10px;
-      font-weight: 800;
-      color: var(--green);
-      vertical-align: middle;
-      flex: 0 0 auto;
+    .answer input {
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      flex-shrink: 0;
+      accent-color: #173b2a;
+      cursor: pointer;
     }
 
     .answer-text {
-      vertical-align: middle;
-    }
-
-    .actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 12px;
-      margin-top: 26px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      border: 0;
-      border-radius: 12px;
-      padding: 13px 20px;
-      cursor: pointer;
-      font-weight: 800;
-      transition: .15s ease;
-    }
-
-    .btn-primary {
-      background: var(--green);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: var(--green-light);
-    }
-
-    .btn-secondary {
-      background: #e9edea;
-      color: var(--green);
-    }
-
-    .btn:disabled {
-      opacity: .45;
-      cursor: not-allowed;
-    }
-
-    .result {
-      display: none;
-      margin-top: 28px;
-      border-top: 1px solid var(--border);
-      padding-top: 26px;
-    }
-
-    .result.visible {
-      display: block;
-    }
-
-    .result-title {
-      font-size: 22px;
-      font-weight: 900;
-      margin-bottom: 16px;
-    }
-
-    .result-title.correct {
-      color: var(--correct);
-    }
-
-    .result-title.wrong {
-      color: var(--wrong);
-    }
-
-    .solution-list {
-      display: grid;
-      gap: 9px;
-      margin-bottom: 22px;
-    }
-
-    .solution-item {
-      padding: 13px 15px;
-      border-radius: 11px;
-      border: 1px solid var(--border);
+      flex: 1;
       line-height: 1.45;
     }
 
-    .solution-item.correct-answer {
-      border-color: #9ac8ad;
-      background: #edf7f0;
+    .answer.correct {
+      border-color: #2e7d32;
+      background: #eaf6eb;
     }
 
-    .info-box {
-      margin-top: 15px;
-      padding: 17px;
-      border-radius: 13px;
-      background: #f5f6f5;
+    .answer.incorrect {
+      border-color: #c62828;
+      background: #fdecec;
     }
 
-    .info-label {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      font-weight: 900;
-      color: var(--green);
+    .answer.missed {
+      border-color: #e69b00;
+      background: #fff6df;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 14px;
+    }
+
+    .result.correct-result {
+      background: #eaf6eb;
+      border: 1px solid #a5d6a7;
+    }
+
+    .result.incorrect-result {
+      background: #fdecec;
+      border: 1px solid #ef9a9a;
+    }
+
+    .result-title {
+      font-weight: 800;
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .explanation {
+      margin-top: 20px;
+      padding: 18px;
+      background: #f4f6f4;
+      border-radius: 14px;
+      line-height: 1.55;
+    }
+
+    .explanation strong {
+      display: block;
       margin-bottom: 7px;
     }
 
-    .info-content {
-      line-height: 1.55;
-      white-space: pre-line;
+    .legal {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f8f4e8;
+      border-radius: 12px;
+      line-height: 1.5;
     }
 
-    .image-box {
-      display: none;
-      margin-top: 18px;
-    }
-
-    .image-box.visible {
-      display: block;
-    }
-
-    .image-box img {
+    .question-image {
       display: block;
       max-width: 100%;
-      max-height: 420px;
-      margin: 0 auto;
+      max-height: 400px;
+      margin: 20px auto;
+      border-radius: 12px;
+      object-fit: contain;
+    }
+
+    .progress {
+      height: 8px;
+      background: #dce3de;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: #173b2a;
+      width: 0%;
+      transition: width 0.2s ease;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns:
+        repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .stat {
+      background: #f4f6f4;
+      padding: 16px;
       border-radius: 12px;
     }
 
-    .empty {
-      color: var(--muted);
+    .stat-number {
+      font-size: 25px;
+      font-weight: 800;
+    }
+
+    .stat-label {
+      color: #65736a;
+      font-size: 14px;
+    }
+
+    .loading {
       text-align: center;
-      padding: 30px 10px;
+      padding: 50px 20px;
+    }
+
+    .error {
+      background: #fdecec;
+      border: 1px solid #ef9a9a;
+      color: #8b1e1e;
+      padding: 18px;
+      border-radius: 14px;
+      line-height: 1.5;
+    }
+
+    .small {
+      font-size: 13px;
+      color: #68756d;
     }
 
     @media (max-width: 600px) {
+
       .app {
-        width: min(100% - 18px, 900px);
-        padding-top: 18px;
+        padding: 12px;
+      }
+
+      header {
+        padding: 18px;
+        border-radius: 14px;
       }
 
       .card {
-        padding: 20px 16px;
-        border-radius: 15px;
+        padding: 18px;
+        border-radius: 14px;
       }
 
-      .actions {
-        flex-direction: column;
+      .question-text {
+        font-size: 20px;
       }
 
-      .actions .btn {
-        width: 100%;
+      .answer {
+        padding: 14px;
       }
+
     }
+
   </style>
 </head>
 
 <body>
-  <main class="app">
 
-    <header>
-      <div class="brand">Kurs instruktora</div>
-      <h1>Testy</h1>
-    </header>
+<div class="app">
 
-    <!-- EKRAN STARTOWY -->
-    <section id="startScreen" class="screen active">
-      <div class="card start-card">
-        <h2>Sprawdź swoją wiedzę</h2>
+  <header>
+    <h1>Testy instruktora nauki jazdy</h1>
+    <p>Sprawdź swoją wiedzę</p>
+  </header>
 
-        <p>
-          Pytania są pobierane z pliku <strong>Baza_danych.xlsx</strong>.
-          Odpowiedź zostanie oceniona dopiero po zatwierdzeniu.
-        </p>
 
-        <button id="startButton" class="btn btn-primary">
+  <!-- ========================= -->
+  <!-- START -->
+  <!-- ========================= -->
+
+  <section
+    id="startScreen"
+    class="screen active"
+  >
+
+    <div class="card">
+
+      <h2 class="start-title">
+        Test
+      </h2>
+
+      <p>
+        Test składa się z 20 losowo wybranych pytań.
+      </p>
+
+      <p>
+        W pytaniach może być więcej niż jedna prawidłowa odpowiedź.
+      </p>
+
+      <p class="small">
+        Zaznacz wszystkie odpowiedzi, które uważasz za prawidłowe,
+        a następnie kliknij „Sprawdź odpowiedź”.
+      </p>
+
+      <div class="buttons">
+
+        <button
+          id="startButton"
+          class="primary"
+        >
           Rozpocznij test
         </button>
 
-        <div id="loadStatus" class="status">
-          Ładowanie bazy pytań…
-        </div>
       </div>
-    </section>
+
+    </div>
+
+    <div class="card">
+
+      <h3>Statystyki</h3>
+
+      <div class="stats">
+
+        <div class="stat">
+          <div
+            id="statAnswered"
+            class="stat-number"
+          >
+            0
+          </div>
+
+          <div class="stat-label">
+            rozwiązanych
+          </div>
+        </div>
+
+        <div class="stat">
+          <div
+            id="statCorrect"
+            class="stat-number"
+          >
+            0
+          </div>
+
+          <div class="stat-label">
+            poprawnych
+          </div>
+        </div>
+
+        <div class="stat">
+          <div
+            id="statAccuracy"
+            class="stat-number"
+          >
+            0%
+          </div>
+
+          <div class="stat-label">
+            skuteczność
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
 
 
-    <!-- EKRAN TESTU -->
-    <section id="testScreen" class="screen">
+  <!-- ========================= -->
+  <!-- LOADING -->
+  <!-- ========================= -->
 
-      <div class="topbar">
-        <span id="questionCounter">Pytanie 1</span>
-        <span id="questionId"></span>
+  <section
+    id="loadingScreen"
+    class="screen"
+  >
+
+    <div class="card loading">
+
+      <h2>Wczytywanie bazy pytań...</h2>
+
+      <p>
+        Chwileczkę.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- ========================= -->
+  <!-- TEST -->
+  <!-- ========================= -->
+
+  <section
+    id="quizScreen"
+    class="screen"
+  >
+
+    <div class="card">
+
+      <div
+        id="progressText"
+        class="question-number"
+      >
+        Pytanie 1 z 20
       </div>
 
       <div class="progress">
-        <div id="progressFill" class="progress-fill"></div>
+        <div
+          id="progressBar"
+          class="progress-bar"
+        ></div>
       </div>
 
-      <div class="card">
+      <div
+        id="questionText"
+        class="question-text"
+      ></div>
 
-        <div id="questionNumber" class="question-number"></div>
+      <img
+        id="questionImage"
+        class="question-image"
+        style="display:none;"
+        alt=""
+      >
 
-        <h2 id="questionText" class="question"></h2>
+      <div
+        id="answersContainer"
+        class="answers"
+      ></div>
 
-        <div id="answers" class="answers"></div>
+      <div class="buttons">
 
-        <div class="actions">
-          <button id="confirmButton" class="btn btn-primary">
-            Zatwierdź odpowiedź
-          </button>
-        </div>
+        <button
+          id="confirmButton"
+          class="primary"
+        >
+          Sprawdź odpowiedź
+        </button>
 
-
-        <!-- ROZWIĄZANIE -->
-        <div id="result" class="result">
-
-          <div id="resultTitle" class="result-title"></div>
-
-          <div id="solutionList" class="solution-list"></div>
-
-
-          <div id="explanationBox" class="info-box">
-            <div class="info-label">Wyjaśnienie</div>
-            <div id="explanation" class="info-content"></div>
-          </div>
-
-
-          <div id="legalBox" class="info-box">
-            <div class="info-label">Podstawa prawna</div>
-            <div id="legalBasis" class="info-content"></div>
-          </div>
-
-
-          <div id="imageBox" class="image-box">
-            <div class="info-label">Ilustracja</div>
-
-            <img
-              id="questionImage"
-              src=""
-              alt="Ilustracja do pytania"
-            >
-          </div>
-
-
-          <div class="actions">
-            <button id="nextButton" class="btn btn-primary">
-              Następne pytanie
-            </button>
-          </div>
-
-        </div>
+        <button
+          id="nextButton"
+          class="secondary"
+          style="display:none;"
+        >
+          Następne pytanie
+        </button>
 
       </div>
-    </section>
 
-  </main>
+      <div
+        id="resultContainer"
+        style="display:none;"
+      ></div>
 
+    </div>
 
-  <script>
-
-    // ============================================================
-    // KONFIGURACJA
-    // ============================================================
-
-    const EXCEL_FILE = "Baza_danych.xlsx";
-
-    const QUESTIONS_PER_TEST = 20;
+  </section>
 
 
-    // ============================================================
-    // ZMIENNE APLIKACJI
-    // ============================================================
+  <!-- ========================= -->
+  <!-- FINISH -->
+  <!-- ========================= -->
 
-    let allQuestions = [];
-    let testQuestions = [];
-    let currentQuestionIndex = 0;
-    let currentQuestion = null;
-    let selectedAnswers = [];
+  <section
+    id="finishScreen"
+    class="screen"
+  >
+
+    <div class="card">
+
+      <h2>Test zakończony</h2>
+
+      <div
+        id="finalResult"
+      ></div>
+
+      <div class="buttons">
+
+        <button
+          id="restartButton"
+          class="primary"
+        >
+          Nowy test
+        </button>
+
+        <button
+          id="backToStartButton"
+          class="secondary"
+        >
+          Wróć do początku
+        </button>
+
+      </div>
+
+    </div>
+
+  </section>
 
 
-    // ============================================================
-    // ELEMENTY HTML
-    // ============================================================
+  <!-- ========================= -->
+  <!-- ERROR -->
+  <!-- ========================= -->
 
-    const startScreen =
-      document.getElementById("startScreen");
+  <section
+    id="errorScreen"
+    class="screen"
+  >
 
-    const testScreen =
-      document.getElementById("testScreen");
+    <div class="card">
 
-    const startButton =
-      document.getElementById("startButton");
+      <div
+        id="errorContainer"
+        class="error"
+      ></div>
 
-    const confirmButton =
-      document.getElementById("confirmButton");
+    </div>
 
-    const nextButton =
-      document.getElementById("nextButton");
+  </section>
 
-    const loadStatus =
-      document.getElementById("loadStatus");
+</div>
 
-    const questionCounter =
-      document.getElementById("questionCounter");
 
-    const questionId =
-      document.getElementById("questionId");
+<script>
 
-    const questionNumber =
-      document.getElementById("questionNumber");
+  /* =========================================================
+     KONFIGURACJA
+     ========================================================= */
 
-    const questionText =
-      document.getElementById("questionText");
+  const EXCEL_FILE = "Baza_danych.xlsx";
 
-    const answersContainer =
-      document.getElementById("answers");
+  const QUESTIONS_PER_TEST = 20;
 
-    const progressFill =
-      document.getElementById("progressFill");
+
+  /* =========================================================
+     STAN APLIKACJI
+     ========================================================= */
+
+  let allQuestions = [];
+
+  let testQuestions = [];
+
+  let currentQuestionIndex = 0;
+
+  let currentQuestion = null;
+
+  let selectedAnswers = [];
+
+  let questionAnswered = false;
+
+
+  /* =========================================================
+     ELEMENTY DOM
+     ========================================================= */
+
+  const startScreen =
+    document.getElementById("startScreen");
+
+  const loadingScreen =
+    document.getElementById("loadingScreen");
+
+  const quizScreen =
+    document.getElementById("quizScreen");
+
+  const finishScreen =
+    document.getElementById("finishScreen");
+
+  const errorScreen =
+    document.getElementById("errorScreen");
+
+  const errorContainer =
+    document.getElementById("errorContainer");
+
+  const startButton =
+    document.getElementById("startButton");
+
+  const restartButton =
+    document.getElementById("restartButton");
+
+  const backToStartButton =
+    document.getElementById("backToStartButton");
+
+  const confirmButton =
+    document.getElementById("confirmButton");
+
+  const nextButton =
+    document.getElementById("nextButton");
+
+  const questionText =
+    document.getElementById("questionText");
+
+  const answersContainer =
+    document.getElementById("answersContainer");
+
+  const questionImage =
+    document.getElementById("questionImage");
+
+  const progressText =
+    document.getElementById("progressText");
+
+  const progressBar =
+    document.getElementById("progressBar");
+
+  const resultContainer =
+    document.getElementById("resultContainer");
+
+  const finalResult =
+    document.getElementById("finalResult");
+
+
+  /* =========================================================
+     EKRANY
+     ========================================================= */
+
+  function showScreen(screen) {
+
+    document
+      .querySelectorAll(".screen")
+      .forEach(element => {
+        element.classList.remove("active");
+      });
+
+    screen.classList.add("active");
+  }
+
+
+  /* =========================================================
+     PARSOWANIE POPRAWNYCH ODPOWIEDZI
+     =========================================================
+
+     Obsługujemy:
+
+     1
+     2
+     3
+
+     1|2
+     1|3
+     2|3
+
+     1|2|3
+
+     oraz starsze:
+
+     1,2
+     1,3
+     2,3
+
+     oraz przypadek, gdy Excel zrobił z "1,2"
+     liczbę 1.2.
+  */
+
+  function parseCorrectAnswers(value) {
+
+    if (
+      value === null ||
+      value === undefined
+    ) {
+      return [];
+    }
+
+    let text = String(value)
+      .trim();
+
+    if (!text) {
+      return [];
+    }
+
+    /*
+      Zamieniamy wszystkie możliwe separatory
+      na "|".
+    */
+
+    text = text
+      .replace(/,/g, "|")
+      .replace(/;/g, "|")
+      .replace(/\//g, "|")
+      .replace(/\s+/g, "|");
+
+    /*
+      Wyciągamy wyłącznie cyfry 1, 2, 3.
+
+      Dzięki temu:
+
+      "2|3"  -> ["2","3"]
+      "2,3"  -> ["2","3"]
+      "2.3"  -> ["2","3"]
+      2.3    -> ["2","3"]
+    */
+
+    const matches =
+      text.match(/[123]/g);
+
+    if (!matches) {
+      return [];
+    }
 
     const result =
-      document.getElementById("result");
-
-    const resultTitle =
-      document.getElementById("resultTitle");
-
-    const solutionList =
-      document.getElementById("solutionList");
-
-    const explanation =
-      document.getElementById("explanation");
-
-    const legalBasis =
-      document.getElementById("legalBasis");
-
-    const imageBox =
-      document.getElementById("imageBox");
-
-    const questionImage =
-      document.getElementById("questionImage");
-
-
-    // ============================================================
-    // START APLIKACJI
-    // ============================================================
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      loadExcelDatabase
-    );
-
-    startButton.addEventListener(
-      "click",
-      startTest
-    );
-
-    confirmButton.addEventListener(
-      "click",
-      confirmAnswer
-    );
-
-    nextButton.addEventListener(
-      "click",
-      showNextQuestion
-    );
-
-
-    // ============================================================
-    // WCZYTYWANIE EXCELA
-    // ============================================================
-
-    async function loadExcelDatabase() {
-
-      try {
-
-        const response =
-  await fetch(`${EXCEL_FILE}?v=${Date.now()}`, {
-    cache: "no-store"
-  });;
-
-        if (!response.ok) {
-
-          throw new Error(
-            `Nie udało się znaleźć pliku ${EXCEL_FILE}.`
-          );
-        }
-
-        const arrayBuffer =
-          await response.arrayBuffer();
-
-
-        const workbook =
-          XLSX.read(arrayBuffer, {
-            type: "array"
-          });
-
-
-        const sheetName =
-          workbook.SheetNames[0];
-
-        const worksheet =
-          workbook.Sheets[sheetName];
-
-
-        /*
-          raw: false powoduje, że SheetJS stara się
-          przekazywać wartości w formie wyświetlanej
-          w Excelu.
-
-          Dodatkowo POPRAWNE korzysta teraz z separatora "|",
-          więc np. 1|3 nie może zostać potraktowane
-          jako liczba dziesiętna.
-        */
-
-        const rows =
-          XLSX.utils.sheet_to_json(
-            worksheet,
-            {
-              defval: "",
-              raw: false
-            }
-          );
-
-
-        console.log("POPRAWNE z Excela:", rows.map(row => ({
-  ID: row.ID,
-  POPRAWNE: row.POPRAWNE
-})));
-        
-        allQuestions =
-          rows
-            .map(normalizeQuestion)
-            .filter(
-              question => question.question
-            );
-
-
-        if (allQuestions.length === 0) {
-
-          throw new Error(
-            "Excel został odczytany, ale nie znaleziono żadnych pytań."
-          );
-        }
-
-
-        loadStatus.textContent =
-          `Załadowano ${allQuestions.length} pytań.`;
-
-        startButton.disabled = false;
-
-
-      } catch (error) {
-
-        console.error(error);
-
-        loadStatus.textContent =
-          `Błąd: ${error.message}`;
-
-        loadStatus.classList.add("error");
-
-        startButton.disabled = true;
-      }
-    }
-
-
-    // ============================================================
-    // NORMALIZACJA WIERSZA EXCELA
-    // ============================================================
-
-    function normalizeQuestion(row) {
-
-      const correct =
-        parseCorrectAnswers(
-          row.POPRAWNE
+      matches
+        .map(Number)
+        .filter(
+          number =>
+            number >= 1 &&
+            number <= 3
+        )
+        .map(
+          number =>
+            number - 1
         );
 
-      console.log(
-  "Pytanie:",
-  row.ID,
-  "POPRAWNE:",
-  row.POPRAWNE,
-  "po parsowaniu:",
-  correct
-);
+    /*
+      Usuwamy duplikaty
+      i sortujemy.
+    */
 
-      return {
-
-        id:
-          String(
-            row.ID ?? ""
-          ).trim(),
+    return [
+      ...new Set(result)
+    ].sort(
+      (a, b) => a - b
+    );
+  }
 
 
-        question:
-          String(
-            row.PYTANIE ?? ""
-          ).trim(),
+  /* =========================================================
+     NORMALIZACJA PYTANIA
+     ========================================================= */
+
+  function normalizeQuestion(row) {
+
+    const correctAnswers =
+      parseCorrectAnswers(
+        row.POPRAWNE
+      );
+
+    return {
+
+      id:
+        String(
+          row.ID ?? ""
+        ).trim(),
+
+      question:
+        String(
+          row.PYTANIE ?? ""
+        ).trim(),
+
+      answers: [
+
+        String(
+          row.ODPOWIEDZ_1 ?? ""
+        ).trim(),
+
+        String(
+          row.ODPOWIEDZ_2 ?? ""
+        ).trim(),
+
+        String(
+          row.ODPOWIEDZ_3 ?? ""
+        ).trim()
+
+      ],
+
+      correctAnswers,
+
+      explanation:
+        String(
+          row.WYJAŚNIENIE ?? ""
+        ).trim(),
+
+      legalBasis:
+        String(
+          row.PODSTAWA_PRAWNA ?? ""
+        ).trim(),
+
+      image:
+        String(
+          row.OBRAZ ?? ""
+        ).trim()
+
+    };
+  }
 
 
-        answers: [
+  /* =========================================================
+     WCZYTYWANIE EXCELA
+     ========================================================= */
 
-          String(
-            row.ODPOWIEDZ_1 ?? ""
-          ).trim(),
+  async function loadQuestions() {
 
-          String(
-            row.ODPOWIEDZ_2 ?? ""
-          ).trim(),
+    try {
 
-          String(
-            row.ODPOWIEDZ_3 ?? ""
-          ).trim()
+      showScreen(
+        loadingScreen
+      );
 
-        ],
+      /*
+        Cache busting.
 
+        Dzięki temu przeglądarka nie powinna
+        podawać starej Baza_danych.xlsx.
+      */
 
-        correctAnswers:
-          correct,
+      const url =
+        `${EXCEL_FILE}?v=${Date.now()}`;
 
+      const response =
+        await fetch(
+          url,
+          {
+            cache: "no-store"
+          }
+        );
 
-        explanation:
-          String(
-            row.WYJAŚNIENIE ?? ""
-          ).trim(),
+      if (!response.ok) {
 
+        throw new Error(
+          `Nie udało się pobrać pliku ${EXCEL_FILE}. ` +
+          `Kod HTTP: ${response.status}`
+        );
 
-        legalBasis:
-          String(
-            row.PODSTAWA_PRAWNA ?? ""
-          ).trim(),
+      }
 
+      const arrayBuffer =
+        await response.arrayBuffer();
 
-        image:
-          String(
-            row.OBRAZ ?? ""
-          ).trim()
-      };
-    }
-
-
-    // ============================================================
-    // ODCZYT "POPRAWNE"
-    //
-    // NOWY FORMAT:
-    //
-    // "1"       -> [0]
-    // "1|3"     -> [0, 2]
-    // "1|2"     -> [0, 1]
-    // "1|2|3"   -> [0, 1, 2]
-    //
-    // Excel nie interpretuje "|" jako separatora dziesiętnego.
-    // ============================================================
-
-    function parseCorrectAnswers(value) {
+      const workbook =
+        XLSX.read(
+          arrayBuffer,
+          {
+            type: "array",
+            cellDates: false
+          }
+        );
 
       if (
-        value === null ||
-        value === undefined ||
-        value === ""
+        !workbook.SheetNames ||
+        workbook.SheetNames.length === 0
       ) {
-        return [];
+
+        throw new Error(
+          "Plik Excel nie zawiera arkusza."
+        );
+
       }
 
+      const sheetName =
+        workbook.SheetNames[0];
 
-      return [
-        ...new Set(
+      const worksheet =
+        workbook.Sheets[
+          sheetName
+        ];
 
-          String(value)
-            .trim()
-            .split("|")
-            .map(
-              item =>
-                Number(
-                  item.trim()
-                )
-            )
-            .filter(
-              number =>
-                Number.isInteger(number) &&
-                number >= 1 &&
-                number <= 3
-            )
-            .map(
-              number =>
-                number - 1
-            )
+      /*
+        raw:false jest celowe.
+        Dzięki temu dostajemy wartości
+        tak, jak Excel je prezentuje.
+      */
 
-        )
+      const rows =
+        XLSX.utils.sheet_to_json(
+          worksheet,
+          {
+            defval: "",
+            raw: false
+          }
+        );
 
-      ].sort(
-        (a, b) =>
-          a - b
-      );
-    }
+      if (!rows.length) {
 
+        throw new Error(
+          "Arkusz Excel jest pusty."
+        );
 
-    // ============================================================
-    // START TESTU
-    // ============================================================
-
-    function startTest() {
-
-      if (!allQuestions.length) {
-        return;
       }
 
+      allQuestions =
+        rows
+          .map(
+            normalizeQuestion
+          )
+          .filter(
+            question =>
+              question.question
+          );
 
-      const pool =
-        [...allQuestions];
+      /*
+        Sprawdzamy, czy mamy pytania,
+        które mają poprawne odpowiedzi.
+      */
 
+      const invalidQuestions =
+        allQuestions.filter(
+          question =>
+            question.correctAnswers.length === 0
+        );
 
-      shuffle(pool);
+      if (
+        invalidQuestions.length > 0
+      ) {
 
-
-      testQuestions =
-        pool.slice(
-          0,
-          Math.min(
-            QUESTIONS_PER_TEST,
-            pool.length
+        console.warn(
+          "Pytania bez rozpoznanej poprawnej odpowiedzi:",
+          invalidQuestions.map(
+            question => ({
+              id: question.id,
+              question:
+                question.question
+            })
           )
         );
 
+      }
 
-      currentQuestionIndex = 0;
-
-
-      startScreen.classList.remove(
-        "active"
+      console.log(
+        "Wczytano pytań:",
+        allQuestions.length
       );
 
-      testScreen.classList.add(
-        "active"
+      /*
+        DEBUG:
+        pokazujemy pierwsze pytania
+        wraz z poprawnymi odpowiedziami.
+      */
+
+      console.table(
+        allQuestions.map(
+          question => ({
+            ID: question.id,
+            POPRAWNE:
+              question.correctAnswers
+                .map(
+                  index =>
+                    index + 1
+                )
+                .join("|")
+          })
+        )
       );
 
+      updateStatistics();
 
-      showQuestion();
+      showScreen(
+        startScreen
+      );
+
+    } catch (error) {
+
+      console.error(
+        error
+      );
+
+      errorContainer.innerHTML = `
+        <strong>Nie udało się wczytać bazy pytań.</strong>
+        <br><br>
+        ${escapeHtml(
+          error.message
+        )}
+        <br><br>
+        Sprawdź, czy plik
+        <strong>Baza_danych.xlsx</strong>
+        znajduje się w tym samym miejscu co index.html.
+      `;
+
+      showScreen(
+        errorScreen
+      );
+
+    }
+
+  }
+
+
+  /* =========================================================
+     LOSOWANIE PYTAŃ
+     ========================================================= */
+
+  function shuffle(array) {
+
+    const result =
+      [...array];
+
+    for (
+      let i = result.length - 1;
+      i > 0;
+      i--
+    ) {
+
+      const j =
+        Math.floor(
+          Math.random() *
+          (i + 1)
+        );
+
+      [
+        result[i],
+        result[j]
+      ] = [
+        result[j],
+        result[i]
+      ];
+
+    }
+
+    return result;
+  }
+
+
+  function createTest() {
+
+    const shuffled =
+      shuffle(
+        allQuestions
+      );
+
+    testQuestions =
+      shuffled.slice(
+        0,
+        Math.min(
+          QUESTIONS_PER_TEST,
+          shuffled.length
+        )
+      );
+
+    currentQuestionIndex = 0;
+
+    showQuestion();
+
+  }
+
+
+  /* =========================================================
+     WYŚWIETLANIE PYTANIA
+     ========================================================= */
+
+  function showQuestion() {
+
+    currentQuestion =
+      testQuestions[
+        currentQuestionIndex
+      ];
+
+    selectedAnswers = [];
+
+    questionAnswered = false;
+
+    resultContainer.style.display =
+      "none";
+
+    resultContainer.innerHTML =
+      "";
+
+    confirmButton.style.display =
+      "inline-block";
+
+    confirmButton.disabled =
+      false;
+
+    nextButton.style.display =
+      "none";
+
+    questionText.textContent =
+      currentQuestion.question;
+
+    progressText.textContent =
+      `Pytanie ${
+        currentQuestionIndex + 1
+      } z ${
+        testQuestions.length
+      }`;
+
+    const progress =
+      (
+        (
+          currentQuestionIndex + 1
+        ) /
+        testQuestions.length
+      ) *
+      100;
+
+    progressBar.style.width =
+      `${progress}%`;
+
+
+    /*
+      Obraz
+    */
+
+    if (
+      currentQuestion.image
+    ) {
+
+      questionImage.src =
+        currentQuestion.image;
+
+      questionImage.style.display =
+        "block";
+
+      questionImage.onerror =
+        function() {
+
+          this.style.display =
+            "none";
+
+        };
+
+    } else {
+
+      questionImage.style.display =
+        "none";
+
+      questionImage.removeAttribute(
+        "src"
+      );
+
     }
 
 
-    // ============================================================
-    // WYŚWIETLENIE PYTANIA
-    // ============================================================
+    /*
+      Odpowiedzi
+    */
 
-    function showQuestion() {
+    answersContainer.innerHTML =
+      "";
 
-      currentQuestion =
-        testQuestions[
-          currentQuestionIndex
-        ];
-
-
-      selectedAnswers = [];
-
-
-      result.classList.remove(
-        "visible"
-      );
-
-
-      confirmButton.disabled = false;
-
-
-      questionCounter.textContent =
-        `Pytanie ${
-          currentQuestionIndex + 1
-        } z ${
-          testQuestions.length
-        }`;
-
-
-      questionId.textContent =
-        currentQuestion.id
-          ? `ID: ${currentQuestion.id}`
-          : "";
-
-
-      questionNumber.textContent =
-        `Pytanie ${
-          currentQuestionIndex + 1
-        }`;
-
-
-      questionText.textContent =
-        currentQuestion.question;
-
-
-      progressFill.style.width =
-        `${
-          (
-            (currentQuestionIndex + 1) /
-            testQuestions.length
-          ) * 100
-        }%`;
-
-
-      renderAnswers();
-
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-      });
-    }
-
-
-    // ============================================================
-    // WYŚWIETLENIE ODPOWIEDZI
-    // ============================================================
-
-    function renderAnswers() {
-
-      answersContainer.innerHTML = "";
-
-
-      currentQuestion.answers.forEach(
-        (answer, index) => {
+    currentQuestion.answers
+      .forEach(
+        (
+          answer,
+          index
+        ) => {
 
           if (!answer) {
             return;
           }
 
+          const label =
+            document.createElement(
+              "label"
+            );
 
-          const wrapper =
-            document.createElement("div");
-
-          wrapper.className =
+          label.className =
             "answer";
 
+          const checkbox =
+            document.createElement(
+              "input"
+            );
 
-          const input =
-            document.createElement("input");
-
-
-          /*
-            Checkbox, ponieważ pytanie może mieć:
-            - 1 poprawną odpowiedź
-            - 2 poprawne odpowiedzi
-            - 3 poprawne odpowiedzi
-          */
-
-          input.type =
+          checkbox.type =
             "checkbox";
 
-          input.id =
-            `answer-${index}`;
+          checkbox.value =
+            String(index);
 
-          input.value =
-            index;
+          checkbox.dataset.index =
+            String(index);
 
-
-          input.addEventListener(
+          checkbox.addEventListener(
             "change",
             handleAnswerSelection
           );
 
-
-          const label =
-            document.createElement("label");
-
-          label.htmlFor =
-            input.id;
-
-
-          const letter =
-            document.createElement("span");
-
-          letter.className =
-            "answer-letter";
-
-          letter.textContent =
-            String.fromCharCode(
-              65 + index
-            );
-
-
           const text =
-            document.createElement("span");
+            document.createElement(
+              "div"
+            );
 
           text.className =
             "answer-text";
@@ -973,481 +1243,796 @@
           text.textContent =
             answer;
 
-
-          label.appendChild(letter);
-
-          label.appendChild(text);
-
-
-          wrapper.appendChild(input);
-
-          wrapper.appendChild(label);
-
-
-          answersContainer.appendChild(wrapper);
-        }
-      );
-    }
-
-
-    // ============================================================
-    // ZAZNACZANIE ODPOWIEDZI
-    // ============================================================
-
-    function handleAnswerSelection(event) {
-
-      const index =
-        Number(
-          event.target.value
-        );
-
-
-      if (event.target.checked) {
-
-        if (
-          !selectedAnswers.includes(index)
-        ) {
-
-          selectedAnswers.push(index);
-        }
-
-      } else {
-
-        selectedAnswers =
-          selectedAnswers.filter(
-            answerIndex =>
-              answerIndex !== index
+          label.appendChild(
+            checkbox
           );
-      }
 
+          label.appendChild(
+            text
+          );
 
-      selectedAnswers.sort(
-        (a, b) =>
-          a - b
+          answersContainer.appendChild(
+            label
+          );
+
+        }
       );
+
+    showScreen(
+      quizScreen
+    );
+
+  }
+
+
+  /* =========================================================
+     ZAZNACZANIE ODPOWIEDZI
+     ========================================================= */
+
+  function handleAnswerSelection(
+    event
+  ) {
+
+    if (questionAnswered) {
+      return;
     }
 
+    const index =
+      Number(
+        event.target.value
+      );
 
-    // ============================================================
-    // ZATWIERDZENIE ODPOWIEDZI
-    // ============================================================
-
-    function confirmAnswer() {
+    if (
+      event.target.checked
+    ) {
 
       if (
-        selectedAnswers.length === 0
+        !selectedAnswers.includes(
+          index
+        )
       ) {
 
-        alert(
-          "Najpierw zaznacz odpowiedź."
+        selectedAnswers.push(
+          index
         );
 
-        return;
       }
 
+    } else {
 
-      /*
-        Odpowiedź jest poprawna tylko wtedy,
-        gdy użytkownik zaznaczy DOKŁADNIE
-        taki sam zestaw odpowiedzi jak w POPRAWNE.
-
-        Przykład:
-
-        POPRAWNE = 1|3
-
-        A + C -> poprawnie
-        A      -> błędnie
-        C      -> błędnie
-        A+B+C  -> błędnie
-      */
-
-      const correct =
-        arraysEqual(
-          selectedAnswers,
-          currentQuestion.correctAnswers
+      selectedAnswers =
+        selectedAnswers.filter(
+          answerIndex =>
+            answerIndex !== index
         );
 
+    }
 
-      showResult(correct);
+    selectedAnswers.sort(
+      (a, b) => a - b
+    );
+
+  }
 
 
-      saveAnswerStatistic(
-        currentQuestion.id,
+  /* =========================================================
+     PORÓWNANIE ODPOWIEDZI
+     ========================================================= */
+
+  function answersAreEqual(
+    selected,
+    correct
+  ) {
+
+    if (
+      !Array.isArray(selected) ||
+      !Array.isArray(correct)
+    ) {
+      return false;
+    }
+
+    const selectedSet =
+      new Set(
+        selected
+      );
+
+    const correctSet =
+      new Set(
         correct
       );
 
-
-      confirmButton.disabled = true;
-    }
-
-
-    // ============================================================
-    // POKAZANIE ROZWIĄZANIA
-    // ============================================================
-
-    function showResult(isCorrect) {
-
-      result.classList.add(
-        "visible"
-      );
-
-
-      resultTitle.textContent =
-        isCorrect
-          ? "✓ Poprawna odpowiedź"
-          : "✕ Niepoprawna odpowiedź";
-
-
-      resultTitle.className =
-        `result-title ${
-          isCorrect
-            ? "correct"
-            : "wrong"
-        }`;
-
-
-      solutionList.innerHTML = "";
-
-
-      currentQuestion.answers.forEach(
-        (answer, index) => {
-
-          if (!answer) {
-            return;
-          }
-
-
-          const item =
-            document.createElement(
-              "div"
-            );
-
-
-          item.className =
-            "solution-item";
-
-
-          /*
-            Tutaj sprawdzamy bezpośrednio,
-            czy dany numer odpowiedzi znajduje się
-            w tablicy correctAnswers.
-          */
-
-          if (
-            currentQuestion
-              .correctAnswers
-              .includes(index)
-          ) {
-
-            item.classList.add(
-              "correct-answer"
-            );
-
-
-            item.innerHTML =
-              `<strong>✓ Prawidłowa:</strong> ${
-                escapeHtml(answer)
-              }`;
-
-          } else {
-
-            item.innerHTML =
-              `<strong>Nieprawidłowa:</strong> ${
-                escapeHtml(answer)
-              }`;
-          }
-
-
-          solutionList.appendChild(
-            item
-          );
-        }
-      );
-
-
-      explanation.textContent =
-        currentQuestion.explanation ||
-        "Brak wyjaśnienia w bazie.";
-
-
-      legalBasis.textContent =
-        currentQuestion.legalBasis ||
-        "Brak podstawy prawnej w bazie.";
-
-
-      showQuestionImage();
-
-
-      result.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }
-
-
-    // ============================================================
-    // OBRAZ
-    // ============================================================
-
-    function showQuestionImage() {
-
-      const imagePath =
-        currentQuestion.image;
-
-
-      if (!imagePath) {
-
-        imageBox.classList.remove(
-          "visible"
-        );
-
-        questionImage.removeAttribute(
-          "src"
-        );
-
-        return;
-      }
-
-
-      questionImage.src =
-        imagePath;
-
-
-      questionImage.onerror =
-        () => {
-
-          imageBox.classList.remove(
-            "visible"
-          );
-        };
-
-
-      questionImage.onload =
-        () => {
-
-          imageBox.classList.add(
-            "visible"
-          );
-        };
-    }
-
-
-    // ============================================================
-    // NASTĘPNE PYTANIE
-    // ============================================================
-
-    function showNextQuestion() {
-
-      if (
-        currentQuestionIndex <
-        testQuestions.length - 1
-      ) {
-
-        currentQuestionIndex++;
-
-        showQuestion();
-
-      } else {
-
-        showTestFinished();
-      }
-    }
-
-
-    // ============================================================
-    // KONIEC TESTU
-    // ============================================================
-
-    function showTestFinished() {
-
-      const solved =
-        testQuestions.length;
-
-
-      alert(
-        `Test zakończony!\nRozwiązano ${solved} pytań.`
-      );
-
-
-      testScreen.classList.remove(
-        "active"
-      );
-
-      startScreen.classList.add(
-        "active"
-      );
-    }
-
-
-    // ============================================================
-    // STATYSTYKI
-    // ============================================================
-
-    function saveAnswerStatistic(
-      id,
-      isCorrect
+    if (
+      selectedSet.size !==
+      correctSet.size
     ) {
 
-      if (!id) {
-        return;
-      }
+      return false;
 
+    }
 
-      const storageKey =
-        "kurs_instruktora_statystyki";
+    for (
+      const answer of correctSet
+    ) {
 
-
-      const statistics =
-        JSON.parse(
-          localStorage.getItem(
-            storageKey
-          ) || "{}"
-        );
-
-
-      if (!statistics[id]) {
-
-        statistics[id] = {
-
-          solved: 0,
-
-          correct: 0,
-
-          wrong: 0,
-
-          lastSolved: null,
-
-          lastWrong: null
-
-        };
-      }
-
-
-      statistics[id].solved++;
-
-
-      if (isCorrect) {
-
-        statistics[id].correct++;
-
-      } else {
-
-        statistics[id].wrong++;
-
-        statistics[id].lastWrong =
-          new Date().toISOString();
-      }
-
-
-      statistics[id].lastSolved =
-        new Date().toISOString();
-
-
-      localStorage.setItem(
-        storageKey,
-        JSON.stringify(
-          statistics
+      if (
+        !selectedSet.has(
+          answer
         )
+      ) {
+
+        return false;
+
+      }
+
+    }
+
+    return true;
+  }
+
+
+  /* =========================================================
+     SPRAWDZANIE ODPOWIEDZI
+     ========================================================= */
+
+  function checkAnswer() {
+
+    if (
+      questionAnswered
+    ) {
+      return;
+    }
+
+    /*
+      Nie pozwalamy zatwierdzić
+      pustej odpowiedzi.
+    */
+
+    if (
+      selectedAnswers.length === 0
+    ) {
+
+      alert(
+        "Zaznacz przynajmniej jedną odpowiedź."
       );
+
+      return;
     }
 
 
-    // ============================================================
-    // LOSOWANIE
-    // ============================================================
+    questionAnswered = true;
 
-    function shuffle(array) {
+    selectedAnswers.sort(
+      (a, b) => a - b
+    );
 
-      for (
-        let i = array.length - 1;
-        i > 0;
-        i--
-      ) {
+    const correctAnswers =
+      [
+        ...currentQuestion.correctAnswers
+      ].sort(
+        (a, b) => a - b
+      );
 
-        const j =
-          Math.floor(
-            Math.random() *
-            (i + 1)
+
+    /*
+      KLUCZOWE MIEJSCE
+
+      Sprawdzamy cały zestaw odpowiedzi.
+    */
+
+    const isCorrect =
+      answersAreEqual(
+        selectedAnswers,
+        correctAnswers
+      );
+
+
+    /*
+      Kolorowanie odpowiedzi
+    */
+
+    const labels =
+      answersContainer
+        .querySelectorAll(
+          ".answer"
+        );
+
+    labels.forEach(
+      (
+        label,
+        index
+      ) => {
+
+        const checkbox =
+          label.querySelector(
+            "input"
+          );
+
+        const wasSelected =
+          selectedAnswers.includes(
+            index
+          );
+
+        const isActuallyCorrect =
+          correctAnswers.includes(
+            index
           );
 
 
-        [
-          array[i],
-          array[j]
-        ] = [
-          array[j],
-          array[i]
-        ];
+        /*
+          Poprawna odpowiedź:
+          zielona.
+        */
+
+        if (
+          isActuallyCorrect
+        ) {
+
+          label.classList.add(
+            "correct"
+          );
+
+        }
+
+
+        /*
+          Zaznaczona błędna:
+          czerwona.
+        */
+
+        if (
+          wasSelected &&
+          !isActuallyCorrect
+        ) {
+
+          label.classList.add(
+            "incorrect"
+          );
+
+        }
+
+
+        /*
+          Niezaznaczona poprawna:
+          pomarańczowa.
+
+          Dzięki temu użytkownik widzi,
+          czego nie zaznaczył.
+        */
+
+        if (
+          !wasSelected &&
+          isActuallyCorrect
+        ) {
+
+          label.classList.add(
+            "missed"
+          );
+
+        }
+
+        checkbox.disabled =
+          true;
+
       }
+    );
 
 
-      return array;
+    /*
+      Wynik
+    */
+
+    showResult(
+      isCorrect
+    );
+
+
+    /*
+      Statystyki
+    */
+
+    saveAnswerStatistic(
+      currentQuestion.id,
+      isCorrect
+    );
+
+
+    /*
+      Przyciski
+    */
+
+    confirmButton.disabled =
+      true;
+
+    confirmButton.style.display =
+      "none";
+
+    nextButton.style.display =
+      "inline-block";
+
+  }
+
+
+  /* =========================================================
+     WYNIK PYTANIA
+     ========================================================= */
+
+  function showResult(
+    isCorrect
+  ) {
+
+    resultContainer.style.display =
+      "block";
+
+    resultContainer.className =
+      isCorrect
+        ? "result correct-result"
+        : "result incorrect-result";
+
+    const title =
+      isCorrect
+        ? "✓ Poprawna odpowiedź"
+        : "✗ Niepoprawna odpowiedź";
+
+    let html =
+      `
+        <div class="result-title">
+          ${title}
+        </div>
+      `;
+
+
+    /*
+      Wyjaśnienie
+    */
+
+    if (
+      currentQuestion.explanation
+    ) {
+
+      html += `
+        <div class="explanation">
+
+          <strong>Wyjaśnienie</strong>
+
+          ${formatText(
+            currentQuestion.explanation
+          )}
+
+        </div>
+      `;
+
     }
 
 
-    // ============================================================
-    // PORÓWNANIE TABLIC
-    // ============================================================
+    /*
+      Podstawa prawna
+    */
 
-    function arraysEqual(a, b) {
+    if (
+      currentQuestion.legalBasis
+    ) {
 
-      if (
-        !Array.isArray(a) ||
-        !Array.isArray(b)
-      ) {
-        return false;
-      }
+      html += `
+        <div class="legal">
 
+          <strong>Podstawa prawna</strong>
 
-      if (
-        a.length !== b.length
-      ) {
-        return false;
-      }
+          <br>
 
+          ${formatText(
+            currentQuestion.legalBasis
+          )}
 
-      return a.every(
-        (value, index) =>
-          value === b[index]
-      );
+        </div>
+      `;
+
     }
 
 
-    // ============================================================
-    // BEZPIECZNE WSTAWIANIE TEKSTU
-    // ============================================================
+    resultContainer.innerHTML =
+      html;
 
-    function escapeHtml(text) {
+  }
 
-      return String(text)
 
-        .replaceAll(
-          "&",
-          "&amp;"
-        )
+  /* =========================================================
+     NASTĘPNE PYTANIE
+     ========================================================= */
 
-        .replaceAll(
-          "<",
-          "&lt;"
-        )
+  function nextQuestion() {
 
-        .replaceAll(
-          ">",
-          "&gt;"
-        )
+    currentQuestionIndex++;
 
-        .replaceAll(
-          '"',
-          "&quot;"
-        )
+    if (
+      currentQuestionIndex >=
+      testQuestions.length
+    ) {
 
-        .replaceAll(
-          "'",
-          "&#039;"
+      finishTest();
+
+      return;
+
+    }
+
+    showQuestion();
+
+  }
+
+
+  /* =========================================================
+     KONIEC TESTU
+     ========================================================= */
+
+  function finishTest() {
+
+    const stats =
+      getStatistics();
+
+    const testCorrect =
+      testQuestions.filter(
+        question => {
+
+          const saved =
+            stats.answers[
+              question.id
+            ];
+
+          return (
+            saved &&
+            saved.correct === true
+          );
+
+        }
+      ).length;
+
+
+    const percentage =
+      testQuestions.length
+        ? Math.round(
+            (
+              testCorrect /
+              testQuestions.length
+            ) *
+            100
+          )
+        : 0;
+
+
+    finalResult.innerHTML = `
+
+      <div class="stats">
+
+        <div class="stat">
+
+          <div class="stat-number">
+            ${testQuestions.length}
+          </div>
+
+          <div class="stat-label">
+            pytań
+          </div>
+
+        </div>
+
+        <div class="stat">
+
+          <div class="stat-number">
+            ${testCorrect}
+          </div>
+
+          <div class="stat-label">
+            poprawnych
+          </div>
+
+        </div>
+
+        <div class="stat">
+
+          <div class="stat-number">
+            ${percentage}%
+          </div>
+
+          <div class="stat-label">
+            skuteczność
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+
+    updateStatistics();
+
+    showScreen(
+      finishScreen
+    );
+
+  }
+
+
+  /* =========================================================
+     STATYSTYKI
+     ========================================================= */
+
+  function getStatistics() {
+
+    try {
+
+      const saved =
+        localStorage.getItem(
+          "instruktor_stats"
         );
+
+      if (!saved) {
+
+        return {
+          answers: {}
+        };
+
+      }
+
+      const parsed =
+        JSON.parse(
+          saved
+        );
+
+      if (
+        !parsed ||
+        typeof parsed !== "object"
+      ) {
+
+        return {
+          answers: {}
+        };
+
+      }
+
+      if (
+        !parsed.answers ||
+        typeof parsed.answers !== "object"
+      ) {
+
+        parsed.answers = {};
+
+      }
+
+      return parsed;
+
+    } catch (
+      error
+    ) {
+
+      console.error(
+        "Błąd odczytu statystyk:",
+        error
+      );
+
+      return {
+        answers: {}
+      };
+
     }
 
-  </script>
+  }
+
+
+  function saveAnswerStatistic(
+    questionId,
+    correct
+  ) {
+
+    if (!questionId) {
+      return;
+    }
+
+    const stats =
+      getStatistics();
+
+    stats.answers[
+      questionId
+    ] = {
+
+      correct:
+        Boolean(correct),
+
+      date:
+        new Date().toISOString()
+
+    };
+
+
+    try {
+
+      localStorage.setItem(
+        "instruktor_stats",
+        JSON.stringify(
+          stats
+        )
+      );
+
+    } catch (
+      error
+    ) {
+
+      console.error(
+        "Nie udało się zapisać statystyk:",
+        error
+      );
+
+    }
+
+    updateStatistics();
+
+  }
+
+
+  function updateStatistics() {
+
+    const stats =
+      getStatistics();
+
+    const entries =
+      Object.values(
+        stats.answers
+      );
+
+    const answered =
+      entries.length;
+
+    const correct =
+      entries.filter(
+        item =>
+          item.correct === true
+      ).length;
+
+    const accuracy =
+      answered
+        ? Math.round(
+            (
+              correct /
+              answered
+            ) *
+            100
+          )
+        : 0;
+
+    document.getElementById(
+      "statAnswered"
+    ).textContent =
+      answered;
+
+    document.getElementById(
+      "statCorrect"
+    ).textContent =
+      correct;
+
+    document.getElementById(
+      "statAccuracy"
+    ).textContent =
+      `${accuracy}%`;
+
+  }
+
+
+  /* =========================================================
+     FORMATOWANIE TEKSTU
+     ========================================================= */
+
+  function formatText(
+    text
+  ) {
+
+    return escapeHtml(
+      text
+    ).replace(
+      /\n/g,
+      "<br>"
+    );
+
+  }
+
+
+  function escapeHtml(
+    text
+  ) {
+
+    return String(
+      text
+    )
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+      .replace(
+        /</g,
+        "&lt;"
+      )
+      .replace(
+        />/g,
+        "&gt;"
+      )
+      .replace(
+        /"/g,
+        "&quot;"
+      )
+      .replace(
+        /'/g,
+        "&#039;"
+      );
+
+  }
+
+
+  /* =========================================================
+     EVENTY
+     ========================================================= */
+
+  startButton.addEventListener(
+    "click",
+    () => {
+
+      if (
+        !allQuestions.length
+      ) {
+
+        alert(
+          "Baza pytań nie została jeszcze wczytana."
+        );
+
+        return;
+
+      }
+
+      createTest();
+
+    }
+  );
+
+
+  restartButton.addEventListener(
+    "click",
+    () => {
+
+      createTest();
+
+    }
+  );
+
+
+  backToStartButton.addEventListener(
+    "click",
+    () => {
+
+      updateStatistics();
+
+      showScreen(
+        startScreen
+      );
+
+    }
+  );
+
+
+  confirmButton.addEventListener(
+    "click",
+    checkAnswer
+  );
+
+
+  nextButton.addEventListener(
+    "click",
+    nextQuestion
+  );
+
+
+  /* =========================================================
+     START
+     ========================================================= */
+
+  loadQuestions();
+
+</script>
 
 </body>
 </html>
