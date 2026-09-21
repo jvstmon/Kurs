@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="pl">
 
@@ -342,15 +343,7 @@
     <p>Sprawdź swoją wiedzę</p>
   </header>
 
-
-  <!-- ========================= -->
-  <!-- START -->
-  <!-- ========================= -->
-
-  <section
-    id="startScreen"
-    class="screen active"
-  >
+  <section id="startScreen" class="screen active">
 
     <div class="card">
 
@@ -394,9 +387,7 @@
           <div
             id="statAnswered"
             class="stat-number"
-          >
-            0
-          </div>
+          >0</div>
 
           <div class="stat-label">
             rozwiązanych
@@ -407,9 +398,7 @@
           <div
             id="statCorrect"
             class="stat-number"
-          >
-            0
-          </div>
+          >0</div>
 
           <div class="stat-label">
             poprawnych
@@ -420,9 +409,7 @@
           <div
             id="statAccuracy"
             class="stat-number"
-          >
-            0%
-          </div>
+          >0%</div>
 
           <div class="stat-label">
             skuteczność
@@ -435,11 +422,6 @@
 
   </section>
 
-
-  <!-- ========================= -->
-  <!-- LOADING -->
-  <!-- ========================= -->
-
   <section
     id="loadingScreen"
     class="screen"
@@ -449,18 +431,11 @@
 
       <h2>Wczytywanie bazy pytań...</h2>
 
-      <p>
-        Chwileczkę.
-      </p>
+      <p>Chwileczkę.</p>
 
     </div>
 
   </section>
-
-
-  <!-- ========================= -->
-  <!-- TEST -->
-  <!-- ========================= -->
 
   <section
     id="quizScreen"
@@ -477,10 +452,12 @@
       </div>
 
       <div class="progress">
+
         <div
           id="progressBar"
           class="progress-bar"
         ></div>
+
       </div>
 
       <div
@@ -528,11 +505,6 @@
 
   </section>
 
-
-  <!-- ========================= -->
-  <!-- FINISH -->
-  <!-- ========================= -->
-
   <section
     id="finishScreen"
     class="screen"
@@ -542,9 +514,7 @@
 
       <h2>Test zakończony</h2>
 
-      <div
-        id="finalResult"
-      ></div>
+      <div id="finalResult"></div>
 
       <div class="buttons">
 
@@ -568,11 +538,6 @@
 
   </section>
 
-
-  <!-- ========================= -->
-  <!-- ERROR -->
-  <!-- ========================= -->
-
   <section
     id="errorScreen"
     class="screen"
@@ -594,18 +559,9 @@
 
 <script>
 
-  /* =========================================================
-     KONFIGURACJA
-     ========================================================= */
-
   const EXCEL_FILE = "Baza_danych.xlsx";
 
   const QUESTIONS_PER_TEST = 20;
-
-
-  /* =========================================================
-     STAN APLIKACJI
-     ========================================================= */
 
   let allQuestions = [];
 
@@ -619,10 +575,6 @@
 
   let questionAnswered = false;
 
-
-  /* =========================================================
-     ELEMENTY DOM
-     ========================================================= */
 
   const startScreen =
     document.getElementById("startScreen");
@@ -679,10 +631,6 @@
     document.getElementById("finalResult");
 
 
-  /* =========================================================
-     EKRANY
-     ========================================================= */
-
   function showScreen(screen) {
 
     document
@@ -695,31 +643,33 @@
   }
 
 
-  /* =========================================================
-     PARSOWANIE POPRAWNYCH ODPOWIEDZI
-     =========================================================
-
-     Obsługujemy:
-
-     1
-     2
-     3
-
-     1|2
-     1|3
-     2|3
-
-     1|2|3
-
-     oraz starsze:
-
-     1,2
-     1,3
-     2,3
-
-     oraz przypadek, gdy Excel zrobił z "1,2"
-     liczbę 1.2.
-  */
+  /*
+   * ==========================================================
+   * POPRAWNE ODPOWIEDZI
+   * ==========================================================
+   *
+   * W Excelu wpisujemy:
+   *
+   * 1
+   * 2
+   * 3
+   * 1|2
+   * 1|3
+   * 2|3
+   * 1|2|3
+   *
+   * Funkcja zwraca indeksy JavaScript:
+   *
+   * 1     -> [0]
+   * 2     -> [1]
+   * 3     -> [2]
+   * 1|2   -> [0,1]
+   * 1|3   -> [0,2]
+   * 2|3   -> [1,2]
+   * 1|2|3 -> [0,1,2]
+   *
+   * Obsługiwane są również stare separatory.
+   */
 
   function parseCorrectAnswers(value) {
 
@@ -738,26 +688,30 @@
     }
 
     /*
-      Zamieniamy wszystkie możliwe separatory
-      na "|".
-    */
+     * Jeżeli Excel zwrócił liczbę,
+     * np. 2.3, nadal chcemy uzyskać 2 i 3.
+     */
 
     text = text
       .replace(/,/g, "|")
       .replace(/;/g, "|")
       .replace(/\//g, "|")
+      .replace(/\\/g, "|")
       .replace(/\s+/g, "|");
 
     /*
-      Wyciągamy wyłącznie cyfry 1, 2, 3.
-
-      Dzięki temu:
-
-      "2|3"  -> ["2","3"]
-      "2,3"  -> ["2","3"]
-      "2.3"  -> ["2","3"]
-      2.3    -> ["2","3"]
-    */
+     * Ważne:
+     *
+     * Nie używamy split("|") jako jedynego sposobu.
+     * Szukamy wszystkich wystąpień cyfr 1, 2 i 3.
+     *
+     * Dzięki temu:
+     *
+     * 2|3 -> 2,3
+     * 2,3 -> 2,3
+     * 2.3 -> 2,3
+     * " 2 | 3 " -> 2,3
+     */
 
     const matches =
       text.match(/[123]/g);
@@ -766,41 +720,58 @@
       return [];
     }
 
-    const result =
+    const numbers =
       matches
-        .map(Number)
+        .map(value => Number(value))
         .filter(
-          number =>
-            number >= 1 &&
-            number <= 3
-        )
-        .map(
-          number =>
-            number - 1
+          value =>
+            value === 1 ||
+            value === 2 ||
+            value === 3
         );
 
-    /*
-      Usuwamy duplikaty
-      i sortujemy.
-    */
+    const unique =
+      [...new Set(numbers)];
 
-    return [
-      ...new Set(result)
-    ].sort(
+    unique.sort(
       (a, b) => a - b
+    );
+
+    return unique.map(
+      value => value - 1
     );
   }
 
 
-  /* =========================================================
-     NORMALIZACJA PYTANIA
-     ========================================================= */
+  /*
+   * ==========================================================
+   * NORMALIZACJA
+   * ==========================================================
+   */
 
-  function normalizeQuestion(row) {
+  function normalizeQuestion(
+    row,
+    rawCorrectValue = null
+  ) {
+
+    /*
+     * Najpierw korzystamy z bezpośredniej
+     * wartości komórki POPRAWNE.
+     *
+     * Dopiero jeżeli jej nie ma,
+     * korzystamy z row.POPRAWNE.
+     */
+
+    const correctValue =
+      rawCorrectValue !== null &&
+      rawCorrectValue !== undefined &&
+      rawCorrectValue !== ""
+        ? rawCorrectValue
+        : row.POPRAWNE;
 
     const correctAnswers =
       parseCorrectAnswers(
-        row.POPRAWNE
+        correctValue
       );
 
     return {
@@ -852,9 +823,11 @@
   }
 
 
-  /* =========================================================
-     WCZYTYWANIE EXCELA
-     ========================================================= */
+  /*
+   * ==========================================================
+   * WCZYTYWANIE EXCELA
+   * ==========================================================
+   */
 
   async function loadQuestions() {
 
@@ -865,18 +838,12 @@
       );
 
       /*
-        Cache busting.
-
-        Dzięki temu przeglądarka nie powinna
-        podawać starej Baza_danych.xlsx.
-      */
-
-      const url =
-        `${EXCEL_FILE}?v=${Date.now()}`;
+       * cache busting
+       */
 
       const response =
         await fetch(
-          url,
+          `${EXCEL_FILE}?v=${Date.now()}`,
           {
             cache: "no-store"
           }
@@ -885,7 +852,7 @@
       if (!response.ok) {
 
         throw new Error(
-          `Nie udało się pobrać pliku ${EXCEL_FILE}. ` +
+          `Nie udało się pobrać ${EXCEL_FILE}. ` +
           `Kod HTTP: ${response.status}`
         );
 
@@ -894,12 +861,21 @@
       const arrayBuffer =
         await response.arrayBuffer();
 
+
+      /*
+       * Odczytujemy plik.
+       *
+       * raw:true jest tutaj celowe.
+       * Chcemy dostać rzeczywistą zawartość
+       * komórek, a nie sformatowaną wersję.
+       */
+
       const workbook =
         XLSX.read(
           arrayBuffer,
           {
             type: "array",
-            cellDates: false
+            raw: true
           }
         );
 
@@ -922,20 +898,20 @@
           sheetName
         ];
 
+
       /*
-        raw:false jest celowe.
-        Dzięki temu dostajemy wartości
-        tak, jak Excel je prezentuje.
-      */
+       * Najpierw pobieramy normalne dane.
+       */
 
       const rows =
         XLSX.utils.sheet_to_json(
           worksheet,
           {
             defval: "",
-            raw: false
+            raw: true
           }
         );
+
 
       if (!rows.length) {
 
@@ -945,20 +921,147 @@
 
       }
 
+
+      /*
+       * ======================================================
+       * USTALAMY KOLUMNĘ POPRAWNE
+       * ======================================================
+       */
+
+      const range =
+        XLSX.utils.decode_range(
+          worksheet["!ref"]
+        );
+
+      let headerRow = null;
+
+      for (
+        let column = range.s.c;
+        column <= range.e.c;
+        column++
+      ) {
+
+        const address =
+          XLSX.utils.encode_cell({
+            r: range.s.r,
+            c: column
+          });
+
+        const cell =
+          worksheet[address];
+
+        const value =
+          cell
+            ? String(
+                cell.v ?? ""
+              ).trim()
+            : "";
+
+        if (
+          value.toUpperCase() ===
+          "POPRAWNE"
+        ) {
+
+          headerRow = column;
+
+          break;
+
+        }
+
+      }
+
+
+      /*
+       * Jeżeli znaleźliśmy POPRAWNE,
+       * odczytujemy tę komórkę bezpośrednio
+       * dla każdego wiersza.
+       */
+
       allQuestions =
         rows
           .map(
-            normalizeQuestion
+            (row, rowIndex) => {
+
+              let rawCorrectValue =
+                row.POPRAWNE;
+
+              if (
+                headerRow !== null
+              ) {
+
+                const excelRow =
+                  range.s.r +
+                  1 +
+                  rowIndex;
+
+                const cellAddress =
+                  XLSX.utils.encode_cell({
+                    r: excelRow,
+                    c: headerRow
+                  });
+
+                const cell =
+                  worksheet[
+                    cellAddress
+                  ];
+
+                if (cell) {
+
+                  /*
+                   * cell.v = rzeczywista wartość
+                   * cell.w = wartość wyświetlana
+                   *
+                   * Najpierw próbujemy v.
+                   * Jeżeli jest pusta, używamy w.
+                   */
+
+                  rawCorrectValue =
+                    cell.v !== undefined &&
+                    cell.v !== null
+                      ? cell.v
+                      : cell.w ?? "";
+
+                }
+
+              }
+
+              const question =
+                normalizeQuestion(
+                  row,
+                  rawCorrectValue
+                );
+
+              /*
+               * Zapisujemy również tekstową
+               * reprezentację klucza.
+               *
+               * Przykład:
+               *
+               * [1,2] -> "2|3"
+               */
+
+              question.correctKey =
+                question.correctAnswers
+                  .map(
+                    index =>
+                      index + 1
+                  )
+                  .join("|");
+
+              return question;
+
+            }
           )
           .filter(
             question =>
               question.question
           );
 
+
       /*
-        Sprawdzamy, czy mamy pytania,
-        które mają poprawne odpowiedzi.
-      */
+       * Jeżeli jakieś pytanie nie ma klucza,
+       * pokazujemy ostrzeżenie w konsoli.
+       */
 
       const invalidQuestions =
         allQuestions.filter(
@@ -967,15 +1070,15 @@
         );
 
       if (
-        invalidQuestions.length > 0
+        invalidQuestions.length
       ) {
 
         console.warn(
           "Pytania bez rozpoznanej poprawnej odpowiedzi:",
           invalidQuestions.map(
             question => ({
-              id: question.id,
-              question:
+              ID: question.id,
+              pytanie:
                 question.question
             })
           )
@@ -983,31 +1086,34 @@
 
       }
 
+
+      /*
+       * Kontrola kluczy.
+       */
+
+      console.table(
+        allQuestions.map(
+          question => ({
+            ID:
+              question.id,
+
+            POPRAWNE:
+              question.correctKey,
+
+            "indeksy JS":
+              JSON.stringify(
+                question.correctAnswers
+              )
+          })
+        )
+      );
+
+
       console.log(
         "Wczytano pytań:",
         allQuestions.length
       );
 
-      /*
-        DEBUG:
-        pokazujemy pierwsze pytania
-        wraz z poprawnymi odpowiedziami.
-      */
-
-      console.table(
-        allQuestions.map(
-          question => ({
-            ID: question.id,
-            POPRAWNE:
-              question.correctAnswers
-                .map(
-                  index =>
-                    index + 1
-                )
-                .join("|")
-          })
-        )
-      );
 
       updateStatistics();
 
@@ -1022,15 +1128,22 @@
       );
 
       errorContainer.innerHTML = `
-        <strong>Nie udało się wczytać bazy pytań.</strong>
+        <strong>
+          Nie udało się wczytać bazy pytań.
+        </strong>
+
         <br><br>
+
         ${escapeHtml(
           error.message
         )}
+
         <br><br>
+
         Sprawdź, czy plik
         <strong>Baza_danych.xlsx</strong>
-        znajduje się w tym samym miejscu co index.html.
+        znajduje się w tym samym miejscu
+        co index.html.
       `;
 
       showScreen(
@@ -1042,9 +1155,11 @@
   }
 
 
-  /* =========================================================
-     LOSOWANIE PYTAŃ
-     ========================================================= */
+  /*
+   * ==========================================================
+   * LOSOWANIE
+   * ==========================================================
+   */
 
   function shuffle(array) {
 
@@ -1100,9 +1215,11 @@
   }
 
 
-  /* =========================================================
-     WYŚWIETLANIE PYTANIA
-     ========================================================= */
+  /*
+   * ==========================================================
+   * PYTANIE
+   * ==========================================================
+   */
 
   function showQuestion() {
 
@@ -1130,8 +1247,10 @@
     nextButton.style.display =
       "none";
 
+
     questionText.textContent =
       currentQuestion.question;
+
 
     progressText.textContent =
       `Pytanie ${
@@ -1139,6 +1258,7 @@
       } z ${
         testQuestions.length
       }`;
+
 
     const progress =
       (
@@ -1154,8 +1274,8 @@
 
 
     /*
-      Obraz
-    */
+     * Obraz
+     */
 
     if (
       currentQuestion.image
@@ -1188,8 +1308,8 @@
 
 
     /*
-      Odpowiedzi
-    */
+     * Odpowiedzi
+     */
 
     answersContainer.innerHTML =
       "";
@@ -1213,6 +1333,7 @@
           label.className =
             "answer";
 
+
           const checkbox =
             document.createElement(
               "input"
@@ -1227,10 +1348,12 @@
           checkbox.dataset.index =
             String(index);
 
+
           checkbox.addEventListener(
             "change",
             handleAnswerSelection
           );
+
 
           const text =
             document.createElement(
@@ -1242,6 +1365,7 @@
 
           text.textContent =
             answer;
+
 
           label.appendChild(
             checkbox
@@ -1258,6 +1382,7 @@
         }
       );
 
+
     showScreen(
       quizScreen
     );
@@ -1265,15 +1390,19 @@
   }
 
 
-  /* =========================================================
-     ZAZNACZANIE ODPOWIEDZI
-     ========================================================= */
+  /*
+   * ==========================================================
+   * ZAZNACZANIE
+   * ==========================================================
+   */
 
   function handleAnswerSelection(
     event
   ) {
 
-    if (questionAnswered) {
+    if (
+      questionAnswered
+    ) {
       return;
     }
 
@@ -1281,6 +1410,7 @@
       Number(
         event.target.value
       );
+
 
     if (
       event.target.checked
@@ -1308,6 +1438,7 @@
 
     }
 
+
     selectedAnswers.sort(
       (a, b) => a - b
     );
@@ -1315,49 +1446,51 @@
   }
 
 
-  /* =========================================================
-     PORÓWNANIE ODPOWIEDZI
-     ========================================================= */
+  /*
+   * ==========================================================
+   * PORÓWNANIE
+   * ==========================================================
+   */
 
   function answersAreEqual(
     selected,
     correct
   ) {
 
-    if (
-      !Array.isArray(selected) ||
-      !Array.isArray(correct)
-    ) {
-      return false;
-    }
+    const selectedSorted =
+      [...selected]
+        .map(Number)
+        .sort(
+          (a, b) => a - b
+        );
 
-    const selectedSet =
-      new Set(
-        selected
-      );
+    const correctSorted =
+      [...correct]
+        .map(Number)
+        .sort(
+          (a, b) => a - b
+        );
 
-    const correctSet =
-      new Set(
-        correct
-      );
 
     if (
-      selectedSet.size !==
-      correctSet.size
+      selectedSorted.length !==
+      correctSorted.length
     ) {
 
       return false;
 
     }
+
 
     for (
-      const answer of correctSet
+      let i = 0;
+      i < correctSorted.length;
+      i++
     ) {
 
       if (
-        !selectedSet.has(
-          answer
-        )
+        selectedSorted[i] !==
+        correctSorted[i]
       ) {
 
         return false;
@@ -1366,13 +1499,16 @@
 
     }
 
+
     return true;
   }
 
 
-  /* =========================================================
-     SPRAWDZANIE ODPOWIEDZI
-     ========================================================= */
+  /*
+   * ==========================================================
+   * SPRAWDZANIE
+   * ==========================================================
+   */
 
   function checkAnswer() {
 
@@ -1382,10 +1518,6 @@
       return;
     }
 
-    /*
-      Nie pozwalamy zatwierdzić
-      pustej odpowiedzi.
-    */
 
     if (
       selectedAnswers.length === 0
@@ -1396,45 +1528,43 @@
       );
 
       return;
+
     }
 
 
     questionAnswered = true;
 
-    selectedAnswers.sort(
-      (a, b) => a - b
-    );
 
     const correctAnswers =
-      [
-        ...currentQuestion.correctAnswers
-      ].sort(
-        (a, b) => a - b
-      );
+      [...currentQuestion.correctAnswers]
+        .sort(
+          (a, b) => a - b
+        );
 
 
-    /*
-      KLUCZOWE MIEJSCE
+    const selected =
+      [...selectedAnswers]
+        .sort(
+          (a, b) => a - b
+        );
 
-      Sprawdzamy cały zestaw odpowiedzi.
-    */
 
     const isCorrect =
       answersAreEqual(
-        selectedAnswers,
+        selected,
         correctAnswers
       );
 
 
     /*
-      Kolorowanie odpowiedzi
-    */
+     * Kolorowanie odpowiedzi
+     */
 
     const labels =
-      answersContainer
-        .querySelectorAll(
-          ".answer"
-        );
+      answersContainer.querySelectorAll(
+        ".answer"
+      );
+
 
     labels.forEach(
       (
@@ -1447,21 +1577,18 @@
             "input"
           );
 
+
         const wasSelected =
-          selectedAnswers.includes(
+          selected.includes(
             index
           );
+
 
         const isActuallyCorrect =
           correctAnswers.includes(
             index
           );
 
-
-        /*
-          Poprawna odpowiedź:
-          zielona.
-        */
 
         if (
           isActuallyCorrect
@@ -1473,11 +1600,6 @@
 
         }
 
-
-        /*
-          Zaznaczona błędna:
-          czerwona.
-        */
 
         if (
           wasSelected &&
@@ -1491,14 +1613,6 @@
         }
 
 
-        /*
-          Niezaznaczona poprawna:
-          pomarańczowa.
-
-          Dzięki temu użytkownik widzi,
-          czego nie zaznaczył.
-        */
-
         if (
           !wasSelected &&
           isActuallyCorrect
@@ -1510,6 +1624,7 @@
 
         }
 
+
         checkbox.disabled =
           true;
 
@@ -1517,28 +1632,16 @@
     );
 
 
-    /*
-      Wynik
-    */
-
     showResult(
       isCorrect
     );
 
-
-    /*
-      Statystyki
-    */
 
     saveAnswerStatistic(
       currentQuestion.id,
       isCorrect
     );
 
-
-    /*
-      Przyciski
-    */
 
     confirmButton.disabled =
       true;
@@ -1552,9 +1655,11 @@
   }
 
 
-  /* =========================================================
-     WYNIK PYTANIA
-     ========================================================= */
+  /*
+   * ==========================================================
+   * WYNIK
+   * ==========================================================
+   */
 
   function showResult(
     isCorrect
@@ -1563,15 +1668,18 @@
     resultContainer.style.display =
       "block";
 
+
     resultContainer.className =
       isCorrect
         ? "result correct-result"
         : "result incorrect-result";
 
+
     const title =
       isCorrect
         ? "✓ Poprawna odpowiedź"
         : "✗ Niepoprawna odpowiedź";
+
 
     let html =
       `
@@ -1581,10 +1689,6 @@
       `;
 
 
-    /*
-      Wyjaśnienie
-    */
-
     if (
       currentQuestion.explanation
     ) {
@@ -1592,7 +1696,9 @@
       html += `
         <div class="explanation">
 
-          <strong>Wyjaśnienie</strong>
+          <strong>
+            Wyjaśnienie
+          </strong>
 
           ${formatText(
             currentQuestion.explanation
@@ -1604,10 +1710,6 @@
     }
 
 
-    /*
-      Podstawa prawna
-    */
-
     if (
       currentQuestion.legalBasis
     ) {
@@ -1615,7 +1717,9 @@
       html += `
         <div class="legal">
 
-          <strong>Podstawa prawna</strong>
+          <strong>
+            Podstawa prawna
+          </strong>
 
           <br>
 
@@ -1635,13 +1739,16 @@
   }
 
 
-  /* =========================================================
-     NASTĘPNE PYTANIE
-     ========================================================= */
+  /*
+   * ==========================================================
+   * NASTĘPNE
+   * ==========================================================
+   */
 
   function nextQuestion() {
 
     currentQuestionIndex++;
+
 
     if (
       currentQuestionIndex >=
@@ -1654,19 +1761,23 @@
 
     }
 
+
     showQuestion();
 
   }
 
 
-  /* =========================================================
-     KONIEC TESTU
-     ========================================================= */
+  /*
+   * ==========================================================
+   * KONIEC
+   * ==========================================================
+   */
 
   function finishTest() {
 
     const stats =
       getStatistics();
+
 
     const testCorrect =
       testQuestions.filter(
@@ -1742,6 +1853,7 @@
 
     `;
 
+
     updateStatistics();
 
     showScreen(
@@ -1751,9 +1863,11 @@
   }
 
 
-  /* =========================================================
-     STATYSTYKI
-     ========================================================= */
+  /*
+   * ==========================================================
+   * STATYSTYKI
+   * ==========================================================
+   */
 
   function getStatistics() {
 
@@ -1764,6 +1878,7 @@
           "instruktor_stats"
         );
 
+
       if (!saved) {
 
         return {
@@ -1772,10 +1887,12 @@
 
       }
 
+
       const parsed =
         JSON.parse(
           saved
         );
+
 
       if (
         !parsed ||
@@ -1788,6 +1905,7 @@
 
       }
 
+
       if (
         !parsed.answers ||
         typeof parsed.answers !== "object"
@@ -1797,16 +1915,16 @@
 
       }
 
+
       return parsed;
 
-    } catch (
-      error
-    ) {
+    } catch (error) {
 
       console.error(
         "Błąd odczytu statystyk:",
         error
       );
+
 
       return {
         answers: {}
@@ -1826,8 +1944,10 @@
       return;
     }
 
+
     const stats =
       getStatistics();
+
 
     stats.answers[
       questionId
@@ -1851,9 +1971,7 @@
         )
       );
 
-    } catch (
-      error
-    ) {
+    } catch (error) {
 
       console.error(
         "Nie udało się zapisać statystyk:",
@@ -1861,6 +1979,7 @@
       );
 
     }
+
 
     updateStatistics();
 
@@ -1872,19 +1991,23 @@
     const stats =
       getStatistics();
 
+
     const entries =
       Object.values(
         stats.answers
       );
 
+
     const answered =
       entries.length;
+
 
     const correct =
       entries.filter(
         item =>
           item.correct === true
       ).length;
+
 
     const accuracy =
       answered
@@ -1897,15 +2020,18 @@
           )
         : 0;
 
+
     document.getElementById(
       "statAnswered"
     ).textContent =
       answered;
 
+
     document.getElementById(
       "statCorrect"
     ).textContent =
       correct;
+
 
     document.getElementById(
       "statAccuracy"
@@ -1915,9 +2041,11 @@
   }
 
 
-  /* =========================================================
-     FORMATOWANIE TEKSTU
-     ========================================================= */
+  /*
+   * ==========================================================
+   * TEKST
+   * ==========================================================
+   */
 
   function formatText(
     text
@@ -1964,9 +2092,11 @@
   }
 
 
-  /* =========================================================
-     EVENTY
-     ========================================================= */
+  /*
+   * ==========================================================
+   * EVENTY
+   * ==========================================================
+   */
 
   startButton.addEventListener(
     "click",
@@ -2026,9 +2156,11 @@
   );
 
 
-  /* =========================================================
-     START
-     ========================================================= */
+  /*
+   * ==========================================================
+   * START
+   * ==========================================================
+   */
 
   loadQuestions();
 
@@ -2036,3 +2168,4 @@
 
 </body>
 </html>
+```
