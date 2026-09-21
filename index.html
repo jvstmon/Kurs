@@ -357,6 +357,7 @@
     <section id="startScreen" class="screen active">
       <div class="card start-card">
         <h2>Sprawdź swoją wiedzę</h2>
+
         <p>
           Pytania są pobierane z pliku <strong>Baza_danych.xlsx</strong>.
           Odpowiedź zostanie oceniona dopiero po zatwierdzeniu.
@@ -372,8 +373,10 @@
       </div>
     </section>
 
+
     <!-- EKRAN TESTU -->
     <section id="testScreen" class="screen">
+
       <div class="topbar">
         <span id="questionCounter">Pytanie 1</span>
         <span id="questionId"></span>
@@ -384,7 +387,9 @@
       </div>
 
       <div class="card">
+
         <div id="questionNumber" class="question-number"></div>
+
         <h2 id="questionText" class="question"></h2>
 
         <div id="answers" class="answers"></div>
@@ -395,47 +400,60 @@
           </button>
         </div>
 
-        <!-- ROZWIĄZANIE POKAZUJE SIĘ DOPIERO PO ZATWIERDZENIU -->
+
+        <!-- ROZWIĄZANIE -->
         <div id="result" class="result">
+
           <div id="resultTitle" class="result-title"></div>
 
           <div id="solutionList" class="solution-list"></div>
+
 
           <div id="explanationBox" class="info-box">
             <div class="info-label">Wyjaśnienie</div>
             <div id="explanation" class="info-content"></div>
           </div>
 
+
           <div id="legalBox" class="info-box">
             <div class="info-label">Podstawa prawna</div>
             <div id="legalBasis" class="info-content"></div>
           </div>
 
+
           <div id="imageBox" class="image-box">
             <div class="info-label">Ilustracja</div>
-            <img id="questionImage" src="" alt="Ilustracja do pytania">
+
+            <img
+              id="questionImage"
+              src=""
+              alt="Ilustracja do pytania"
+            >
           </div>
+
 
           <div class="actions">
             <button id="nextButton" class="btn btn-primary">
               Następne pytanie
             </button>
           </div>
+
         </div>
+
       </div>
     </section>
 
   </main>
 
+
   <script>
+
     // ============================================================
     // KONFIGURACJA
     // ============================================================
 
     const EXCEL_FILE = "Baza_danych.xlsx";
 
-    // Liczba pytań w jednym teście.
-    // Na razie 20. Później możemy zrobić wybór użytkownika.
     const QUESTIONS_PER_TEST = 20;
 
 
@@ -454,41 +472,87 @@
     // ELEMENTY HTML
     // ============================================================
 
-    const startScreen = document.getElementById("startScreen");
-    const testScreen = document.getElementById("testScreen");
+    const startScreen =
+      document.getElementById("startScreen");
 
-    const startButton = document.getElementById("startButton");
-    const confirmButton = document.getElementById("confirmButton");
-    const nextButton = document.getElementById("nextButton");
+    const testScreen =
+      document.getElementById("testScreen");
 
-    const loadStatus = document.getElementById("loadStatus");
+    const startButton =
+      document.getElementById("startButton");
 
-    const questionCounter = document.getElementById("questionCounter");
-    const questionId = document.getElementById("questionId");
-    const questionNumber = document.getElementById("questionNumber");
-    const questionText = document.getElementById("questionText");
-    const answersContainer = document.getElementById("answers");
-    const progressFill = document.getElementById("progressFill");
+    const confirmButton =
+      document.getElementById("confirmButton");
 
-    const result = document.getElementById("result");
-    const resultTitle = document.getElementById("resultTitle");
-    const solutionList = document.getElementById("solutionList");
-    const explanation = document.getElementById("explanation");
-    const legalBasis = document.getElementById("legalBasis");
+    const nextButton =
+      document.getElementById("nextButton");
 
-    const imageBox = document.getElementById("imageBox");
-    const questionImage = document.getElementById("questionImage");
+    const loadStatus =
+      document.getElementById("loadStatus");
+
+    const questionCounter =
+      document.getElementById("questionCounter");
+
+    const questionId =
+      document.getElementById("questionId");
+
+    const questionNumber =
+      document.getElementById("questionNumber");
+
+    const questionText =
+      document.getElementById("questionText");
+
+    const answersContainer =
+      document.getElementById("answers");
+
+    const progressFill =
+      document.getElementById("progressFill");
+
+    const result =
+      document.getElementById("result");
+
+    const resultTitle =
+      document.getElementById("resultTitle");
+
+    const solutionList =
+      document.getElementById("solutionList");
+
+    const explanation =
+      document.getElementById("explanation");
+
+    const legalBasis =
+      document.getElementById("legalBasis");
+
+    const imageBox =
+      document.getElementById("imageBox");
+
+    const questionImage =
+      document.getElementById("questionImage");
 
 
     // ============================================================
     // START APLIKACJI
     // ============================================================
 
-    document.addEventListener("DOMContentLoaded", loadExcelDatabase);
+    document.addEventListener(
+      "DOMContentLoaded",
+      loadExcelDatabase
+    );
 
-    startButton.addEventListener("click", startTest);
-    confirmButton.addEventListener("click", confirmAnswer);
-    nextButton.addEventListener("click", showNextQuestion);
+    startButton.addEventListener(
+      "click",
+      startTest
+    );
+
+    confirmButton.addEventListener(
+      "click",
+      confirmAnswer
+    );
+
+    nextButton.addEventListener(
+      "click",
+      showNextQuestion
+    );
 
 
     // ============================================================
@@ -496,46 +560,81 @@
     // ============================================================
 
     async function loadExcelDatabase() {
+
       try {
-        const response = await fetch(EXCEL_FILE);
+
+        const response =
+          await fetch(EXCEL_FILE);
 
         if (!response.ok) {
+
           throw new Error(
             `Nie udało się znaleźć pliku ${EXCEL_FILE}.`
           );
         }
 
-        const arrayBuffer = await response.arrayBuffer();
 
-        const workbook = XLSX.read(arrayBuffer, {
-          type: "array"
-        });
+        const arrayBuffer =
+          await response.arrayBuffer();
 
-        // Bierzemy pierwszy arkusz Excela.
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
 
-        // Zamieniamy wiersze Excela na obiekty JavaScript.
-        const rows = XLSX.utils.sheet_to_json(worksheet, {
-          defval: ""
-        });
+        const workbook =
+          XLSX.read(arrayBuffer, {
+            type: "array"
+          });
 
-        allQuestions = rows
-          .map(normalizeQuestion)
-          .filter(question => question.question);
+
+        const sheetName =
+          workbook.SheetNames[0];
+
+        const worksheet =
+          workbook.Sheets[sheetName];
+
+
+        /*
+          raw: false powoduje, że SheetJS stara się
+          przekazywać wartości w formie wyświetlanej
+          w Excelu.
+
+          Dodatkowo POPRAWNE korzysta teraz z separatora "|",
+          więc np. 1|3 nie może zostać potraktowane
+          jako liczba dziesiętna.
+        */
+
+        const rows =
+          XLSX.utils.sheet_to_json(
+            worksheet,
+            {
+              defval: "",
+              raw: false
+            }
+          );
+
+
+        allQuestions =
+          rows
+            .map(normalizeQuestion)
+            .filter(
+              question => question.question
+            );
+
 
         if (allQuestions.length === 0) {
+
           throw new Error(
             "Excel został odczytany, ale nie znaleziono żadnych pytań."
           );
         }
+
 
         loadStatus.textContent =
           `Załadowano ${allQuestions.length} pytań.`;
 
         startButton.disabled = false;
 
+
       } catch (error) {
+
         console.error(error);
 
         loadStatus.textContent =
@@ -554,29 +653,63 @@
 
     function normalizeQuestion(row) {
 
-      const correct = parseCorrectAnswers(row.POPRAWNE);
+      const correct =
+        parseCorrectAnswers(
+          row.POPRAWNE
+        );
+
 
       return {
-        id: String(row.ID ?? "").trim(),
 
-        question: String(row.PYTANIE ?? "").trim(),
+        id:
+          String(
+            row.ID ?? ""
+          ).trim(),
+
+
+        question:
+          String(
+            row.PYTANIE ?? ""
+          ).trim(),
+
 
         answers: [
-          String(row.ODPOWIEDZ_1 ?? "").trim(),
-          String(row.ODPOWIEDZ_2 ?? "").trim(),
-          String(row.ODPOWIEDZ_3 ?? "").trim()
+
+          String(
+            row.ODPOWIEDZ_1 ?? ""
+          ).trim(),
+
+          String(
+            row.ODPOWIEDZ_2 ?? ""
+          ).trim(),
+
+          String(
+            row.ODPOWIEDZ_3 ?? ""
+          ).trim()
+
         ],
 
-        correctAnswers: correct,
+
+        correctAnswers:
+          correct,
+
 
         explanation:
-          String(row.WYJAŚNIENIE ?? "").trim(),
+          String(
+            row.WYJAŚNIENIE ?? ""
+          ).trim(),
+
 
         legalBasis:
-          String(row.PODSTAWA_PRAWNA ?? "").trim(),
+          String(
+            row.PODSTAWA_PRAWNA ?? ""
+          ).trim(),
+
 
         image:
-          String(row.OBRAZ ?? "").trim()
+          String(
+            row.OBRAZ ?? ""
+          ).trim()
       };
     }
 
@@ -584,73 +717,57 @@
     // ============================================================
     // ODCZYT "POPRAWNE"
     //
-    // Przykłady:
+    // NOWY FORMAT:
+    //
     // "1"       -> [0]
-    // "1,3"     -> [0, 2]
-    // "1, 2, 3" -> [0, 1, 2]
+    // "1|3"     -> [0, 2]
+    // "1|2"     -> [0, 1]
+    // "1|2|3"   -> [0, 1, 2]
+    //
+    // Excel nie interpretuje "|" jako separatora dziesiętnego.
     // ============================================================
 
     function parseCorrectAnswers(value) {
 
-  if (value === null || value === undefined || value === "") {
-    return [];
-  }
-
-  // Excel może potraktować np. "1,3" jako liczbę 1.3
-  if (typeof value === "number") {
-
-    const text = String(value);
-
-    // Przykład:
-    // 1.3 -> odpowiedzi 1 i 3
-    // 1.2 -> odpowiedzi 1 i 2
-    // 1   -> odpowiedź 1
-
-    if (Number.isInteger(value)) {
-      if (value >= 1 && value <= 3) {
-        return [value - 1];
+      if (
+        value === null ||
+        value === undefined ||
+        value === ""
+      ) {
+        return [];
       }
 
-      return [];
+
+      return [
+        ...new Set(
+
+          String(value)
+            .trim()
+            .split("|")
+            .map(
+              item =>
+                Number(
+                  item.trim()
+                )
+            )
+            .filter(
+              number =>
+                Number.isInteger(number) &&
+                number >= 1 &&
+                number <= 3
+            )
+            .map(
+              number =>
+                number - 1
+            )
+
+        )
+
+      ].sort(
+        (a, b) =>
+          a - b
+      );
     }
-
-    const digits = text
-      .split(".")
-      .join("")
-      .split("")
-      .map(Number)
-      .filter(number => number >= 1 && number <= 3);
-
-    return [...new Set(digits)]
-      .sort((a, b) => a - b)
-      .map(number => number - 1);
-  }
-
-  // Jeżeli Excel przekazał tekst, np.:
-  // "1,3"
-  // "1, 3"
-  // "1;3"
-  // "1; 3"
-
-  return String(value)
-    .replace(/;/g, ",")
-    .split(",")
-    .map(item => item.trim())
-    .filter(item => item !== "")
-    .map(item => Number(item))
-    .filter(
-      number =>
-        Number.isInteger(number) &&
-        number >= 1 &&
-        number <= 3
-    )
-    .map(number => number - 1)
-    .filter(
-      (number, index, array) =>
-        array.indexOf(number) === index
-    )
-    .sort((a, b) => a - b);
-}
 
 
     // ============================================================
@@ -663,20 +780,35 @@
         return;
       }
 
-      // Kopia bazy, żeby nie modyfikować oryginału.
-      const pool = [...allQuestions];
+
+      const pool =
+        [...allQuestions];
+
 
       shuffle(pool);
 
-      testQuestions = pool.slice(
-        0,
-        Math.min(QUESTIONS_PER_TEST, pool.length)
-      );
+
+      testQuestions =
+        pool.slice(
+          0,
+          Math.min(
+            QUESTIONS_PER_TEST,
+            pool.length
+          )
+        );
+
 
       currentQuestionIndex = 0;
 
-      startScreen.classList.remove("active");
-      testScreen.classList.add("active");
+
+      startScreen.classList.remove(
+        "active"
+      );
+
+      testScreen.classList.add(
+        "active"
+      );
+
 
       showQuestion();
     }
@@ -689,32 +821,57 @@
     function showQuestion() {
 
       currentQuestion =
-        testQuestions[currentQuestionIndex];
+        testQuestions[
+          currentQuestionIndex
+        ];
+
 
       selectedAnswers = [];
 
-      result.classList.remove("visible");
+
+      result.classList.remove(
+        "visible"
+      );
+
 
       confirmButton.disabled = false;
 
+
       questionCounter.textContent =
-        `Pytanie ${currentQuestionIndex + 1} z ${testQuestions.length}`;
+        `Pytanie ${
+          currentQuestionIndex + 1
+        } z ${
+          testQuestions.length
+        }`;
+
 
       questionId.textContent =
         currentQuestion.id
           ? `ID: ${currentQuestion.id}`
           : "";
 
+
       questionNumber.textContent =
-        `Pytanie ${currentQuestionIndex + 1}`;
+        `Pytanie ${
+          currentQuestionIndex + 1
+        }`;
+
 
       questionText.textContent =
         currentQuestion.question;
 
+
       progressFill.style.width =
-        `${((currentQuestionIndex + 1) / testQuestions.length) * 100}%`;
+        `${
+          (
+            (currentQuestionIndex + 1) /
+            testQuestions.length
+          ) * 100
+        }%`;
+
 
       renderAnswers();
+
 
       window.scrollTo({
         top: 0,
@@ -731,47 +888,91 @@
 
       answersContainer.innerHTML = "";
 
-      currentQuestion.answers.forEach((answer, index) => {
 
-        // Pomijamy pustą odpowiedź.
-        if (!answer) {
-          return;
+      currentQuestion.answers.forEach(
+        (answer, index) => {
+
+          if (!answer) {
+            return;
+          }
+
+
+          const wrapper =
+            document.createElement("div");
+
+          wrapper.className =
+            "answer";
+
+
+          const input =
+            document.createElement("input");
+
+
+          /*
+            Checkbox, ponieważ pytanie może mieć:
+            - 1 poprawną odpowiedź
+            - 2 poprawne odpowiedzi
+            - 3 poprawne odpowiedzi
+          */
+
+          input.type =
+            "checkbox";
+
+          input.id =
+            `answer-${index}`;
+
+          input.value =
+            index;
+
+
+          input.addEventListener(
+            "change",
+            handleAnswerSelection
+          );
+
+
+          const label =
+            document.createElement("label");
+
+          label.htmlFor =
+            input.id;
+
+
+          const letter =
+            document.createElement("span");
+
+          letter.className =
+            "answer-letter";
+
+          letter.textContent =
+            String.fromCharCode(
+              65 + index
+            );
+
+
+          const text =
+            document.createElement("span");
+
+          text.className =
+            "answer-text";
+
+          text.textContent =
+            answer;
+
+
+          label.appendChild(letter);
+
+          label.appendChild(text);
+
+
+          wrapper.appendChild(input);
+
+          wrapper.appendChild(label);
+
+
+          answersContainer.appendChild(wrapper);
         }
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "answer";
-
-        const input = document.createElement("input");
-
-        // Checkbox pozwala obsługiwać zarówno:
-        // - jedną poprawną odpowiedź
-        // - kilka poprawnych odpowiedzi
-        input.type = "checkbox";
-        input.id = `answer-${index}`;
-        input.value = index;
-
-        input.addEventListener("change", handleAnswerSelection);
-
-        const label = document.createElement("label");
-        label.htmlFor = input.id;
-
-        const letter = document.createElement("span");
-        letter.className = "answer-letter";
-        letter.textContent =
-          String.fromCharCode(65 + index);
-
-        const text = document.createElement("span");
-        text.className = "answer-text";
-        text.textContent = answer;
-
-        label.appendChild(letter);
-        label.appendChild(text);
-
-        wrapper.appendChild(input);
-        wrapper.appendChild(label);
-
-        answersContainer.appendChild(wrapper);
-      });
+      );
     }
 
 
@@ -782,21 +983,34 @@
     function handleAnswerSelection(event) {
 
       const index =
-        Number(event.target.value);
+        Number(
+          event.target.value
+        );
+
 
       if (event.target.checked) {
 
-        selectedAnswers.push(index);
+        if (
+          !selectedAnswers.includes(index)
+        ) {
+
+          selectedAnswers.push(index);
+        }
 
       } else {
 
         selectedAnswers =
           selectedAnswers.filter(
-            answerIndex => answerIndex !== index
+            answerIndex =>
+              answerIndex !== index
           );
       }
 
-      selectedAnswers.sort((a, b) => a - b);
+
+      selectedAnswers.sort(
+        (a, b) =>
+          a - b
+      );
     }
 
 
@@ -806,10 +1020,32 @@
 
     function confirmAnswer() {
 
-      if (selectedAnswers.length === 0) {
-        alert("Najpierw zaznacz odpowiedź.");
+      if (
+        selectedAnswers.length === 0
+      ) {
+
+        alert(
+          "Najpierw zaznacz odpowiedź."
+        );
+
         return;
       }
+
+
+      /*
+        Odpowiedź jest poprawna tylko wtedy,
+        gdy użytkownik zaznaczy DOKŁADNIE
+        taki sam zestaw odpowiedzi jak w POPRAWNE.
+
+        Przykład:
+
+        POPRAWNE = 1|3
+
+        A + C -> poprawnie
+        A      -> błędnie
+        C      -> błędnie
+        A+B+C  -> błędnie
+      */
 
       const correct =
         arraysEqual(
@@ -817,13 +1053,15 @@
           currentQuestion.correctAnswers
         );
 
+
       showResult(correct);
 
-      // Statystyki zapisujemy lokalnie.
+
       saveAnswerStatistic(
         currentQuestion.id,
         correct
       );
+
 
       confirmButton.disabled = true;
     }
@@ -835,17 +1073,27 @@
 
     function showResult(isCorrect) {
 
-      result.classList.add("visible");
+      result.classList.add(
+        "visible"
+      );
+
 
       resultTitle.textContent =
         isCorrect
           ? "✓ Poprawna odpowiedź"
           : "✕ Niepoprawna odpowiedź";
 
+
       resultTitle.className =
-        `result-title ${isCorrect ? "correct" : "wrong"}`;
+        `result-title ${
+          isCorrect
+            ? "correct"
+            : "wrong"
+        }`;
+
 
       solutionList.innerHTML = "";
+
 
       currentQuestion.answers.forEach(
         (answer, index) => {
@@ -854,38 +1102,67 @@
             return;
           }
 
-          const item =
-            document.createElement("div");
 
-          item.className = "solution-item";
+          const item =
+            document.createElement(
+              "div"
+            );
+
+
+          item.className =
+            "solution-item";
+
+
+          /*
+            Tutaj sprawdzamy bezpośrednio,
+            czy dany numer odpowiedzi znajduje się
+            w tablicy correctAnswers.
+          */
 
           if (
-            currentQuestion.correctAnswers
+            currentQuestion
+              .correctAnswers
               .includes(index)
           ) {
-            item.classList.add("correct-answer");
+
+            item.classList.add(
+              "correct-answer"
+            );
+
 
             item.innerHTML =
-              `<strong>✓ Prawidłowa:</strong> ${escapeHtml(answer)}`;
+              `<strong>✓ Prawidłowa:</strong> ${
+                escapeHtml(answer)
+              }`;
+
           } else {
 
             item.innerHTML =
-              `<strong>Nieprawidłowa:</strong> ${escapeHtml(answer)}`;
+              `<strong>Nieprawidłowa:</strong> ${
+                escapeHtml(answer)
+              }`;
           }
 
-          solutionList.appendChild(item);
+
+          solutionList.appendChild(
+            item
+          );
         }
       );
+
 
       explanation.textContent =
         currentQuestion.explanation ||
         "Brak wyjaśnienia w bazie.";
 
+
       legalBasis.textContent =
         currentQuestion.legalBasis ||
         "Brak podstawy prawnej w bazie.";
 
+
       showQuestionImage();
+
 
       result.scrollIntoView({
         behavior: "smooth",
@@ -896,11 +1173,6 @@
 
     // ============================================================
     // OBRAZ
-    //
-    // W Excelu OBRAZ może zawierać np.:
-    // "obrazy/pytanie_001.jpg"
-    //
-    // Jeżeli pole jest puste, obraz się nie pojawia.
     // ============================================================
 
     function showQuestionImage() {
@@ -908,21 +1180,41 @@
       const imagePath =
         currentQuestion.image;
 
+
       if (!imagePath) {
-        imageBox.classList.remove("visible");
-        questionImage.removeAttribute("src");
+
+        imageBox.classList.remove(
+          "visible"
+        );
+
+        questionImage.removeAttribute(
+          "src"
+        );
+
         return;
       }
 
-      questionImage.src = imagePath;
 
-      questionImage.onerror = () => {
-        imageBox.classList.remove("visible");
-      };
+      questionImage.src =
+        imagePath;
 
-      questionImage.onload = () => {
-        imageBox.classList.add("visible");
-      };
+
+      questionImage.onerror =
+        () => {
+
+          imageBox.classList.remove(
+            "visible"
+          );
+        };
+
+
+      questionImage.onload =
+        () => {
+
+          imageBox.classList.add(
+            "visible"
+          );
+        };
     }
 
 
@@ -938,12 +1230,11 @@
       ) {
 
         currentQuestionIndex++;
+
         showQuestion();
 
       } else {
 
-        // Na razie po zakończeniu wracamy na początek.
-        // Później zrobimy osobny ekran wyniku testu.
         showTestFinished();
       }
     }
@@ -958,48 +1249,68 @@
       const solved =
         testQuestions.length;
 
+
       alert(
         `Test zakończony!\nRozwiązano ${solved} pytań.`
       );
 
-      testScreen.classList.remove("active");
-      startScreen.classList.add("active");
+
+      testScreen.classList.remove(
+        "active"
+      );
+
+      startScreen.classList.add(
+        "active"
+      );
     }
 
 
     // ============================================================
-    // STATYSTYKI — WERSJA 1
-    //
-    // Później wykorzystamy je do inteligentnego powtarzania
-    // pytań, na które użytkownik odpowiada błędnie.
+    // STATYSTYKI
     // ============================================================
 
-    function saveAnswerStatistic(id, isCorrect) {
+    function saveAnswerStatistic(
+      id,
+      isCorrect
+    ) {
 
       if (!id) {
         return;
       }
 
+
       const storageKey =
         "kurs_instruktora_statystyki";
 
+
       const statistics =
         JSON.parse(
-          localStorage.getItem(storageKey) || "{}"
+          localStorage.getItem(
+            storageKey
+          ) || "{}"
         );
+
 
       if (!statistics[id]) {
 
         statistics[id] = {
+
           solved: 0,
+
           correct: 0,
+
           wrong: 0,
+
           lastSolved: null,
+
           lastWrong: null
+
         };
       }
 
+
       statistics[id].solved++;
+
 
       if (isCorrect) {
 
@@ -1008,16 +1319,21 @@
       } else {
 
         statistics[id].wrong++;
+
         statistics[id].lastWrong =
           new Date().toISOString();
       }
 
+
       statistics[id].lastSolved =
         new Date().toISOString();
 
+
       localStorage.setItem(
         storageKey,
-        JSON.stringify(statistics)
+        JSON.stringify(
+          statistics
+        )
       );
     }
 
@@ -1035,11 +1351,21 @@
       ) {
 
         const j =
-          Math.floor(Math.random() * (i + 1));
+          Math.floor(
+            Math.random() *
+            (i + 1)
+          );
 
-        [array[i], array[j]] =
-          [array[j], array[i]];
+
+        [
+          array[i],
+          array[j]
+        ] = [
+          array[j],
+          array[i]
+        ];
       }
+
 
       return array;
     }
@@ -1050,29 +1376,63 @@
     // ============================================================
 
     function arraysEqual(a, b) {
-  if (a.length !== b.length) {
-    return false;
-  }
 
-  return a.every(
-    (value, index) => value === b[index]
-  );
-}
+      if (
+        !Array.isArray(a) ||
+        !Array.isArray(b)
+      ) {
+        return false;
+      }
+
+
+      if (
+        a.length !== b.length
+      ) {
+        return false;
+      }
+
+
+      return a.every(
+        (value, index) =>
+          value === b[index]
+      );
+    }
 
 
     // ============================================================
-    // BEZPIECZNE WSTAWIANIE TEKSTU DO innerHTML
+    // BEZPIECZNE WSTAWIANIE TEKSTU
     // ============================================================
 
     function escapeHtml(text) {
 
       return String(text)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+
+        .replaceAll(
+          "&",
+          "&amp;"
+        )
+
+        .replaceAll(
+          "<",
+          "&lt;"
+        )
+
+        .replaceAll(
+          ">",
+          "&gt;"
+        )
+
+        .replaceAll(
+          '"',
+          "&quot;"
+        )
+
+        .replaceAll(
+          "'",
+          "&#039;"
+        );
     }
+
   </script>
 
 </body>
