@@ -564,7 +564,9 @@
       try {
 
         const response =
-          await fetch(EXCEL_FILE);
+  await fetch(`${EXCEL_FILE}?v=${Date.now()}`, {
+    cache: "no-store"
+  });;
 
         if (!response.ok) {
 
@@ -572,7 +574,6 @@
             `Nie udało się znaleźć pliku ${EXCEL_FILE}.`
           );
         }
-
 
         const arrayBuffer =
           await response.arrayBuffer();
@@ -611,6 +612,11 @@
           );
 
 
+        console.log("POPRAWNE z Excela:", rows.map(row => ({
+  ID: row.ID,
+  POPRAWNE: row.POPRAWNE
+})));
+        
         allQuestions =
           rows
             .map(normalizeQuestion)
@@ -658,6 +664,14 @@
           row.POPRAWNE
         );
 
+      console.log(
+  "Pytanie:",
+  row.ID,
+  "POPRAWNE:",
+  row.POPRAWNE,
+  "po parsowaniu:",
+  correct
+);
 
       return {
 
