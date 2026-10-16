@@ -1,2852 +1,1489 @@
+
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#173b2a">
-  <meta name="description" content="Testy dla kandydatów na instruktorów nauki jazdy">
-  <title>Kurs instruktora — Testy</title>
-
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-  <style>
-    :root {
-      --green: #173b2a;
-      --green-light: #24583f;
-
-      --cream: #f5f1e8;
-      --white: #ffffff;
-
-      --text: #202520;
-      --muted: #69716b;
-      --border: #d9ded9;
-
-      --correct: #237a4b;
-      --wrong: #b33a3a;
-      --missed: #c88a28;
-
-      /* Kolory elementów interfejsu */
-      --card-bg: #ffffff;
-      --answer-bg: #ffffff;
-      --answer-hover: #f8faf8;
-      --selected-bg: #edf4ef;
-      --status-bg: #eef2ee;
-      --info-bg: #f5f6f5;
-      --progress-bg: #e2e7e3;
-      --secondary-bg: #e9edea;
-
-      --shadow: 0 10px 30px rgba(23, 59, 42, 0.10);
-      --radius: 18px;
-    }
-
-
-    /* ============================================================
-       TRYB NOCNY
-       ============================================================ */
-
-    body.dark-mode {
-      --green: #78b996;
-      --green-light: #9acdb0;
-
-      --cream: #121815;
-      --white: #1b211e;
-
-      --text: #edf2ee;
-      --muted: #aeb9b2;
-      --border: #354039;
-
-      --correct: #72c995;
-      --wrong: #e47d7d;
-      --missed: #e2ae58;
-
-      --card-bg: #1b211e;
-      --answer-bg: #202722;
-      --answer-hover: #28332c;
-      --selected-bg: #294236;
-      --status-bg: #242d27;
-      --info-bg: #242b26;
-      --progress-bg: #303a33;
-      --secondary-bg: #303a34;
-
-      --shadow: 0 10px 30px rgba(0, 0, 0, 0.30);
-    }
-
-
-    * {
-      box-sizing: border-box;
-    }
-
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-
-      font-family:
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
-
-      background: var(--cream);
-      color: var(--text);
-
-      transition:
-        background-color .2s ease,
-        color .2s ease;
-    }
-
-
-    button {
-      font: inherit;
-    }
-
-
-    /* ============================================================
-       GŁÓWNY KONTENER
-       ============================================================ */
-
-    .app {
-      width: min(900px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 32px 0 50px;
-    }
-
-
-    /* ============================================================
-       HEADER
-       ============================================================ */
-
-    .main-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 20px;
-      margin-bottom: 24px;
-    }
-
-
-    header {
-      margin-bottom: 24px;
-    }
-
-
-    .brand {
-      color: var(--green);
-      font-size: 14px;
-      font-weight: 800;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-
-
-    h1 {
-      margin: 6px 0 0;
-
-      font-size:
-        clamp(28px, 5vw, 42px);
-
-      line-height: 1.05;
-    }
-
-
-    /* ============================================================
-       PRZYCISK TRYBU NOCNEGO
-       ============================================================ */
-
-    .theme-toggle {
-      width: 46px;
-      height: 46px;
-
-      border: 1px solid var(--border);
-      border-radius: 50%;
-
-      background: var(--card-bg);
-      color: var(--text);
-
-      cursor: pointer;
-
-      font-size: 21px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      box-shadow: var(--shadow);
-
-      transition:
-        transform .2s ease,
-        background-color .2s ease,
-        color .2s ease,
-        border-color .2s ease,
-        box-shadow .2s ease;
-
-      flex: 0 0 auto;
-    }
-
-
-    .theme-toggle:hover {
-      transform: scale(1.05);
-      border-color: var(--green);
-    }
-
-
-    .theme-toggle:active {
-      transform: scale(.96);
-    }
-
-
-    /* ============================================================
-       EKRANY
-       ============================================================ */
-
-    .screen {
-      display: none;
-    }
-
-
-    .screen.active {
-      display: block;
-    }
-
-
-    /* ============================================================
-       KARTY
-       ============================================================ */
-
-    .card {
-      background: var(--card-bg);
-
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-
-      box-shadow: var(--shadow);
-
-      padding:
-        clamp(22px, 5vw, 38px);
-
-      transition:
-        background-color .2s ease,
-        color .2s ease,
-        border-color .2s ease,
-        box-shadow .2s ease;
-    }
-
-
-    .start-card {
-      text-align: center;
-    }
-
-
-    .start-card p {
-      color: var(--muted);
-
-      line-height: 1.6;
-
-      max-width: 620px;
-
-      margin:
-        12px auto 28px;
-    }
-
-
-    /* ============================================================
-       STATUS
-       ============================================================ */
-
-    .status {
-      margin-top: 18px;
-
-      padding: 12px 16px;
-
-      border-radius: 12px;
-
-      background: var(--status-bg);
-      color: var(--muted);
-
-      font-size: 14px;
-
-      transition:
-        background-color .2s ease,
-        color .2s ease,
-        border-color .2s ease;
-    }
-
-
-    .status.error {
-      background: #faeaea;
-      color: var(--wrong);
-    }
-
-
-    body.dark-mode .status.error {
-      background: #382525;
-      color: var(--wrong);
-    }
-
-
-    /* ============================================================
-       TOPBAR
-       ============================================================ */
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-
-      gap: 16px;
-
-      align-items: center;
-
-      margin-bottom: 18px;
-
-      color: var(--muted);
-
-      font-size: 14px;
-    }
-
-
-    /* ============================================================
-       PROGRESS BAR
-       ============================================================ */
-
-    .progress {
-      height: 7px;
-
-      background: var(--progress-bg);
-
-      border-radius: 99px;
-
-      overflow: hidden;
-
-      margin-bottom: 28px;
-
-      transition:
-        background-color .2s ease;
-    }
-
-
-    .progress-fill {
-      height: 100%;
-      width: 0%;
-
-      background: var(--green);
-
-      transition:
-        width .25s ease,
-        background-color .2s ease;
-    }
-
-
-    /* ============================================================
-       PYTANIE
-       ============================================================ */
-
-    .question-number {
-      color: var(--green);
-
-      font-weight: 800;
-
-      margin-bottom: 10px;
-    }
-
-
-    .question {
-      font-size:
-        clamp(21px, 4vw, 29px);
-
-      line-height: 1.3;
-
-      font-weight: 700;
-
-      margin: 0 0 25px;
-    }
-
-
-    /* ============================================================
-       ODPOWIEDZI
-       ============================================================ */
-
-    .answers {
-      display: grid;
-      gap: 12px;
-    }
-
-
-    .answer {
-      position: relative;
-    }
-
-
-    .answer input {
-      position: absolute;
-
-      opacity: 0;
-
-      pointer-events: none;
-    }
-
-
-    .answer label {
-      display: block;
-
-      cursor: pointer;
-
-      border:
-        2px solid var(--border);
-
-      border-radius: 14px;
-
-      padding:
-        17px 18px;
-
-      line-height: 1.45;
-
-      transition:
-        background-color .15s ease,
-        color .15s ease,
-        border-color .15s ease,
-        box-shadow .15s ease;
-
-      background: var(--answer-bg);
-    }
-
-
-    .answer label:hover {
-      border-color: var(--green-light);
-
-      background:
-        var(--answer-hover);
-    }
-
-
-    .answer input:checked + label {
-      border-color: var(--green);
-
-      background:
-        var(--selected-bg);
-
-      box-shadow:
-        inset 0 0 0 1px var(--green);
-    }
-
-
-    .answer-letter {
-      display: inline-flex;
-
-      width: 29px;
-      height: 29px;
-
-      align-items: center;
-      justify-content: center;
-
-      border:
-        1px solid var(--border);
-
-      border-radius: 50%;
-
-      margin-right: 10px;
-
-      font-weight: 800;
-
-      color: var(--green);
-
-      vertical-align: middle;
-
-      flex: 0 0 auto;
-    }
-
-
-    .answer-text {
-      vertical-align: middle;
-    }
-
-
-    /* ============================================================
-       PRZYCISKI
-       ============================================================ */
-
-    .actions {
-      display: flex;
-
-      justify-content: flex-end;
-
-      gap: 12px;
-
-      margin-top: 26px;
-
-      flex-wrap: wrap;
-    }
-
-
-    .btn {
-      border: 0;
-
-      border-radius: 12px;
-
-      padding:
-        13px 20px;
-
-      cursor: pointer;
-
-      font-weight: 800;
-
-      transition:
-        background-color .15s ease,
-        color .15s ease,
-        opacity .15s ease,
-        transform .15s ease;
-    }
-
-
-    .btn-primary {
-      background: var(--green);
-
-      color: #ffffff;
-    }
-
-
-    .btn-primary:hover {
-      background:
-        var(--green-light);
-    }
-
-
-    .btn-primary:active {
-      transform: translateY(1px);
-    }
-
-
-    .btn-secondary {
-      background:
-        var(--secondary-bg);
-
-      color: var(--green);
-    }
-
-
-    .btn:disabled {
-      opacity: .45;
-
-      cursor: not-allowed;
-    }
-
-
-    /* ============================================================
-       WYNIK
-       ============================================================ */
-
-    .result {
-      display: none;
-
-      margin-top: 28px;
-
-      border-top:
-        1px solid var(--border);
-
-      padding-top: 26px;
-    }
-
-
-    .result.visible {
-      display: block;
-    }
-
-
-    .result-title {
-      font-size: 22px;
-
-      font-weight: 900;
-
-      margin-bottom: 16px;
-    }
-
-
-    .result-title.correct {
-      color: var(--correct);
-    }
-
-
-    .result-title.wrong {
-      color: var(--wrong);
-    }
-
-
-    /* ============================================================
-       LISTA ROZWIĄZANIA
-       ============================================================ */
-
-    .solution-list {
-      display: grid;
-
-      gap: 9px;
-
-      margin-bottom: 22px;
-    }
-
-
-    .solution-item {
-      padding:
-        13px 15px;
-
-      border-radius: 11px;
-
-      border:
-        1px solid var(--border);
-
-      line-height: 1.45;
-    }
-
-
-    .solution-item.correct-answer {
-      border-color: #9ac8ad;
-
-      background: #edf7f0;
-    }
-
-
-    .solution-item.selected-wrong {
-      border-color: #dfaaaa;
-
-      background: #fbeeee;
-    }
-
-
-    .solution-item.correct-missed {
-      border-color: #e2c48d;
-
-      background: #fcf5e7;
-    }
-
-
-    /* Ciemne wersje oznaczeń odpowiedzi */
-
-    body.dark-mode
-    .solution-item.correct-answer {
-      border-color: #3f7255;
-      background: #20372a;
-    }
-
-
-    body.dark-mode
-    .solution-item.selected-wrong {
-      border-color: #7c4848;
-      background: #392526;
-    }
-
-
-    body.dark-mode
-    .solution-item.correct-missed {
-      border-color: #80652f;
-      background: #3a3120;
-    }
-
-
-    /* ============================================================
-       POLA INFORMACYJNE
-       ============================================================ */
-
-    .info-box {
-      margin-top: 15px;
-
-      padding: 17px;
-
-      border-radius: 13px;
-
-      background:
-        var(--info-bg);
-
-      transition:
-        background-color .2s ease,
-        color .2s ease,
-        border-color .2s ease;
-    }
-
-
-    .info-label {
-      font-size: 12px;
-
-      text-transform: uppercase;
-
-      letter-spacing: .06em;
-
-      font-weight: 900;
-
-      color: var(--green);
-
-      margin-bottom: 7px;
-    }
-
-
-    .info-content {
-      line-height: 1.55;
-
-      white-space: pre-line;
-    }
-
-
-    /* ============================================================
-       OBRAZY
-       ============================================================ */
-
-    .image-box {
-      display: none;
-
-      margin-top: 18px;
-    }
-
-
-    .image-box.visible {
-      display: block;
-    }
-
-
-    .image-box img {
-      display: block;
-
-      max-width: 100%;
-
-      max-height: 420px;
-
-      margin: 0 auto;
-
-      border-radius: 12px;
-    }
-
-
-    /* ============================================================
-       PUSTY STAN
-       ============================================================ */
-
-    .empty {
-      color: var(--muted);
-
-      text-align: center;
-
-      padding: 30px 10px;
-    }
-
-
-    /* ============================================================
-       MOBILE
-       ============================================================ */
-
-    @media (max-width: 600px) {
-
-      .app {
-        width:
-          min(100% - 18px, 900px);
-
-        padding-top: 18px;
-      }
-
-
-      .main-header {
-        gap: 12px;
-      }
-
-
-      .theme-toggle {
-        width: 42px;
-        height: 42px;
-
-        font-size: 19px;
-      }
-
-
-      .card {
-        padding:
-          20px 16px;
-
-        border-radius: 15px;
-      }
-
-
-      .actions {
-        flex-direction: column;
-      }
-
-
-      .actions .btn {
-        width: 100%;
-      }
-
-    }
-
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#173b2a">
+    <meta name="description" content="Testy dla kandydatów na instruktorów nauki jazdy">
+
+    <title>Kurs instruktora — Testy</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            --green: #173b2a;
+            --green-light: #24583f;
+            --cream: #f5f1e8;
+            --white: #fff;
+            --text: #202520;
+            --muted: #69716b;
+            --border: #d9ded9;
+            --correct: #237a4b;
+            --wrong: #b33a3a;
+            --missed: #c88a28;
+            --card-bg: #fff;
+            --answer-bg: #fff;
+            --answer-hover: #f8faf8;
+            --selected-bg: #edf4ef;
+            --status-bg: #eef2ee;
+            --info-bg: #f5f6f5;
+            --progress-bg: #e2e7e3;
+            --secondary-bg: #e9edea;
+            --shadow: 0 10px 30px rgba(23, 59, 42, .10);
+            --radius: 18px;
+        }
+
+        body.dark-mode {
+            --green: #78b996;
+            --green-light: #9acdb0;
+            --cream: #121815;
+            --white: #1b211e;
+            --text: #edf2ee;
+            --muted: #aeb9b2;
+            --border: #354039;
+            --correct: #72c995;
+            --wrong: #e47d7d;
+            --missed: #e2ae58;
+            --card-bg: #1b211e;
+            --answer-bg: #202722;
+            --answer-hover: #28332c;
+            --selected-bg: #294236;
+            --status-bg: #242d27;
+            --info-bg: #242b26;
+            --progress-bg: #303a33;
+            --secondary-bg: #303a34;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .30);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--cream);
+            color: var(--text);
+            transition: background-color .2s, color .2s;
+        }
+
+        button {
+            font: inherit;
+        }
+
+        .app {
+            width: min(900px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 32px 0 50px;
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        header {
+            margin-bottom: 24px;
+        }
+
+        .brand {
+            color: var(--green);
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 6px 0 0;
+            font-size: clamp(28px, 5vw, 42px);
+            line-height: 1.05;
+        }
+
+        .theme-toggle {
+            width: 46px;
+            height: 46px;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            background: var(--card-bg);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 21px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+            transition: transform .2s, background-color .2s, color .2s, border-color .2s;
+            flex: 0 0 auto;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.05);
+            border-color: var(--green);
+        }
+
+        .theme-toggle:active {
+            transform: scale(.96);
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: clamp(22px, 5vw, 38px);
+            transition: background-color .2s, color .2s, border-color .2s;
+        }
+
+        .start-card {
+            text-align: center;
+        }
+
+        .start-card p {
+            color: var(--muted);
+            line-height: 1.6;
+            max-width: 620px;
+            margin: 12px auto 28px;
+        }
+
+        .status {
+            margin-top: 18px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: var(--status-bg);
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .status.error {
+            background: #faeaea;
+            color: var(--wrong);
+        }
+
+        body.dark-mode .status.error {
+            background: #382525;
+            color: var(--wrong);
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 18px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .progress {
+            height: 7px;
+            background: var(--progress-bg);
+            border-radius: 99px;
+            overflow: hidden;
+            margin-bottom: 28px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0;
+            background: var(--green);
+            transition: width .25s;
+        }
+
+        .question-number {
+            color: var(--green);
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .question {
+            font-size: clamp(21px, 4vw, 29px);
+            line-height: 1.3;
+            font-weight: 700;
+            margin: 0 0 25px;
+        }
+
+        .answers {
+            display: grid;
+            gap: 12px;
+        }
+
+        .answer {
+            position: relative;
+        }
+
+        .answer input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .answer label {
+            display: block;
+            cursor: pointer;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            padding: 17px 18px;
+            line-height: 1.45;
+            transition: background-color .15s, color .15s, border-color .15s;
+            background: var(--answer-bg);
+        }
+
+        .answer label:hover {
+            border-color: var(--green-light);
+            background: var(--answer-hover);
+        }
+
+        .answer input:checked + label {
+            border-color: var(--green);
+            background: var(--selected-bg);
+            box-shadow: inset 0 0 0 1px var(--green);
+        }
+
+        .answer-letter {
+            display: inline-flex;
+            width: 29px;
+            height: 29px;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            margin-right: 10px;
+            font-weight: 800;
+            color: var(--green);
+            vertical-align: middle;
+            flex: 0 0 auto;
+        }
+
+        .answer-text {
+            vertical-align: middle;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 26px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 12px;
+            padding: 13px 20px;
+            cursor: pointer;
+            font-weight: 800;
+            transition: background-color .15s, color .15s, opacity .15s, transform .15s;
+        }
+
+        .btn-primary {
+            background: var(--green);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: var(--green-light);
+        }
+
+        .btn-primary:active {
+            transform: translateY(1px);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-bg);
+            color: var(--green);
+        }
+
+        .btn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        .result {
+            display: none;
+            margin-top: 28px;
+            border-top: 1px solid var(--border);
+            padding-top: 26px;
+        }
+
+        .result.visible {
+            display: block;
+        }
+
+        .result-title {
+            font-size: 22px;
+            font-weight: 900;
+            margin-bottom: 16px;
+        }
+
+        .result-title.correct {
+            color: var(--correct);
+        }
+
+        .result-title.wrong {
+            color: var(--wrong);
+        }
+
+        .solution-list {
+            display: grid;
+            gap: 9px;
+            margin-bottom: 22px;
+        }
+
+        .solution-item {
+            padding: 13px 15px;
+            border-radius: 11px;
+            border: 1px solid var(--border);
+            line-height: 1.45;
+        }
+
+        .solution-item.correct-answer {
+            border-color: #9ac8ad;
+            background: #edf7f0;
+        }
+
+        .solution-item.selected-wrong {
+            border-color: #dfaaaa;
+            background: #fbeeee;
+        }
+
+        .solution-item.correct-missed {
+            border-color: #e2c48d;
+            background: #fcf5e7;
+        }
+
+        body.dark-mode .solution-item.correct-answer {
+            border-color: #3f7255;
+            background: #20372a;
+        }
+
+        body.dark-mode .solution-item.selected-wrong {
+            border-color: #7c4848;
+            background: #392526;
+        }
+
+        body.dark-mode .solution-item.correct-missed {
+            border-color: #80652f;
+            background: #3a3120;
+        }
+
+        .info-box {
+            margin-top: 15px;
+            padding: 17px;
+            border-radius: 13px;
+            background: var(--info-bg);
+        }
+
+        .info-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            font-weight: 900;
+            color: var(--green);
+            margin-bottom: 7px;
+        }
+
+        .info-content {
+            line-height: 1.55;
+            white-space: pre-line;
+        }
+
+        .image-box {
+            display: none;
+            margin-top: 18px;
+        }
+
+        .image-box.visible {
+            display: block;
+        }
+
+        .image-box img {
+            display: block;
+            max-width: 100%;
+            max-height: 420px;
+            margin: 0 auto;
+            border-radius: 12px;
+        }
+
+        /* Ekran statystyk */
+
+        .stats-card {
+            text-align: center;
+        }
+
+        .stats-card h2 {
+            margin-top: 0;
+        }
+
+        .stats-score {
+            font-size: clamp(48px, 10vw, 76px);
+            font-weight: 900;
+            line-height: 1.1;
+            color: var(--green);
+            margin: 18px 0 8px;
+        }
+
+        .stats-subtitle {
+            color: var(--muted);
+            margin: 0 0 24px;
+        }
+
+        .stats-progress {
+            height: 12px;
+            background: var(--progress-bg);
+            border-radius: 99px;
+            overflow: hidden;
+            margin: 0 auto 28px;
+            max-width: 520px;
+        }
+
+        .stats-progress-fill {
+            height: 100%;
+            width: 0;
+            background: var(--green);
+            transition: width .3s;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        .stats-item {
+            background: var(--info-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px 10px;
+        }
+
+        .stats-item strong {
+            display: block;
+            font-size: clamp(24px, 5vw, 34px);
+            margin-bottom: 5px;
+        }
+
+        .stats-item span {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .stats-message {
+            font-size: 17px;
+            line-height: 1.55;
+            margin: 20px 0;
+            color: var(--text);
+        }
+
+        .empty {
+            color: var(--muted);
+            text-align: center;
+            padding: 30px 10px;
+        }
+
+        @media (max-width: 600px) {
+            .app {
+                width: min(100% - 18px, 900px);
+                padding-top: 18px;
+            }
+
+            .main-header {
+                gap: 12px;
+            }
+
+            .theme-toggle {
+                width: 42px;
+                height: 42px;
+                font-size: 19px;
+            }
+
+            .card {
+                padding: 20px 16px;
+                border-radius: 15px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .actions .btn {
+                width: 100%;
+            }
+
+            .stats-grid {
+                gap: 7px;
+            }
+
+            .stats-item {
+                padding: 14px 5px;
+            }
+
+            .stats-item span {
+                font-size: 12px;
+            }
+        }
+    </style>
 </head>
 
-
 <body>
-
-  <main class="app">
-
-    <!-- ==========================================================
-         HEADER
-         ========================================================== -->
-
-    <header class="main-header">
-
-      <div>
-        <div class="brand">
-          Kurs instruktora
-        </div>
-
-        <h1>
-          Testy
-        </h1>
-      </div>
-
-
-      <!-- PRZEŁĄCZNIK TRYBU NOCNEGO -->
-
-      <button
-        id="themeToggle"
-        class="theme-toggle"
-        type="button"
-        aria-label="Włącz tryb nocny"
-        title="Włącz tryb nocny"
-      >
-        🌙
-      </button>
-
-    </header>
-
-
-    <!-- ==========================================================
-         EKRAN STARTOWY
-         ========================================================== -->
-
-    <section
-      id="startScreen"
-      class="screen active"
-    >
-
-      <div class="card start-card">
-
-        <h2>
-          Sprawdź swoją wiedzę
-        </h2>
-
-
-        <p>
-          Test składa się z
-          <strong>20 pytań</strong>
-          losowanych z bazy.
-          W pytaniach może występować
-          więcej niż jedna prawidłowa odpowiedź.
-          Odpowiedź zostanie oceniona
-          dopiero po zatwierdzeniu.
-        </p>
-
-
-        <button
-          id="startButton"
-          class="btn btn-primary"
-        >
-          Rozpocznij test
-        </button>
-
-
-        <div
-          id="loadStatus"
-          class="status"
-        >
-          Ładowanie bazy pytań…
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- ==========================================================
-         EKRAN TESTU
-         ========================================================== -->
-
-    <section
-      id="testScreen"
-      class="screen"
-    >
-
-      <div class="topbar">
-
-        <span id="questionCounter">
-          Pytanie 1 z 20
-        </span>
-
-        <span id="questionId"></span>
-
-      </div>
-
-
-      <div class="progress">
-
-        <div
-          id="progressFill"
-          class="progress-fill"
-        ></div>
-
-      </div>
-
-
-      <div class="card">
-
-        <div
-          id="questionNumber"
-          class="question-number"
-        ></div>
-
-
-        <h2
-          id="questionText"
-          class="question"
-        ></h2>
-
-
-        <div
-          id="answers"
-          class="answers"
-        ></div>
-
-
-        <!-- ======================================================
-             OBRAZ PRZED ZATWIERDZENIEM
-             ====================================================== -->
-
-        <div
-          id="preImageBox"
-          class="image-box"
-        >
-
-          <div class="info-label">
-            Ilustracja
-          </div>
-
-          <img
-            id="preQuestionImage"
-            src=""
-            alt="Ilustracja do pytania"
-          >
-
-        </div>
-
-
-        <div class="actions">
-
-          <button
-            id="confirmButton"
-            class="btn btn-primary"
-          >
-            Zatwierdź odpowiedź
-          </button>
-
-        </div>
-
-
-        <!-- ======================================================
-             ROZWIĄZANIE PO ZATWIERDZENIU
-             ====================================================== -->
-
-        <div
-          id="result"
-          class="result"
-        >
-
-          <div
-            id="resultTitle"
-            class="result-title"
-          ></div>
-
-
-          <div
-            id="solutionList"
-            class="solution-list"
-          ></div>
-
-
-          <div
-            id="explanationBox"
-            class="info-box"
-          >
-
-            <div class="info-label">
-              Wyjaśnienie
+    <main class="app">
+        <header class="main-header">
+            <div>
+                <div class="brand">Kurs instruktora</div>
+                <h1>Testy</h1>
             </div>
-
-            <div
-              id="explanation"
-              class="info-content"
-            ></div>
-
-          </div>
-
-
-          <div
-            id="legalBox"
-            class="info-box"
-          >
-
-            <div class="info-label">
-              Podstawa prawna
-            </div>
-
-            <div
-              id="legalBasis"
-              class="info-content"
-            ></div>
-
-          </div>
-
-
-          <!-- ====================================================
-               OBRAZ PO ZATWIERDZENIU
-               ==================================================== -->
-
-          <div
-            id="postImageBox"
-            class="image-box"
-          >
-
-            <div class="info-label">
-              Ilustracja
-            </div>
-
-            <img
-              id="postQuestionImage"
-              src=""
-              alt="Ilustracja do pytania"
-            >
-
-          </div>
-
-
-          <div class="actions">
 
             <button
-              id="nextButton"
-              class="btn btn-primary"
-            >
-              Następne pytanie
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-  </main>
-
-
-  <script>
-
-    // ============================================================
-    // KONFIGURACJA
-    // ============================================================
-
-    const EXCEL_FILE =
-      "Baza_danych.xlsx";
-
-    const QUESTIONS_PER_TEST =
-      20;
-
-    const APP_VERSION =
-      "2026-09-21-4";
-
-
-    // Klucz localStorage dla trybu nocnego
-
-    const THEME_STORAGE_KEY =
-      "kurs_instruktora_tryb_nocny";
-
-
-    // ============================================================
-    // ZMIENNE APLIKACJI
-    // ============================================================
-
-    let allQuestions = [];
-
-    let testQuestions = [];
-
-    let currentQuestionIndex = 0;
-
-    let currentQuestion = null;
-
-    let selectedAnswers = [];
-
-
-    // ============================================================
-    // ELEMENTY HTML
-    // ============================================================
-
-    const startScreen =
-      document.getElementById(
-        "startScreen"
-      );
-
-
-    const testScreen =
-      document.getElementById(
-        "testScreen"
-      );
-
-
-    const startButton =
-      document.getElementById(
-        "startButton"
-      );
-
-
-    const confirmButton =
-      document.getElementById(
-        "confirmButton"
-      );
-
-
-    const nextButton =
-      document.getElementById(
-        "nextButton"
-      );
-
-
-    const loadStatus =
-      document.getElementById(
-        "loadStatus"
-      );
-
-
-    const questionCounter =
-      document.getElementById(
-        "questionCounter"
-      );
-
-
-    const questionId =
-      document.getElementById(
-        "questionId"
-      );
-
-
-    const questionNumber =
-      document.getElementById(
-        "questionNumber"
-      );
-
-
-    const questionText =
-      document.getElementById(
-        "questionText"
-      );
-
-
-    const answersContainer =
-      document.getElementById(
-        "answers"
-      );
-
-
-    const progressFill =
-      document.getElementById(
-        "progressFill"
-      );
-
-
-    const result =
-      document.getElementById(
-        "result"
-      );
-
-
-    const resultTitle =
-      document.getElementById(
-        "resultTitle"
-      );
-
-
-    const solutionList =
-      document.getElementById(
-        "solutionList"
-      );
-
-
-    const explanation =
-      document.getElementById(
-        "explanation"
-      );
-
-
-    const legalBasis =
-      document.getElementById(
-        "legalBasis"
-      );
-
-
-    // ============================================================
-    // ELEMENTY TRYBU NOCNEGO
-    // ============================================================
-
-    const themeToggle =
-      document.getElementById(
-        "themeToggle"
-      );
-
-
-    // ============================================================
-    // OBRAZ PRZED ZATWIERDZENIEM
-    // ============================================================
-
-    const preImageBox =
-      document.getElementById(
-        "preImageBox"
-      );
-
-
-    const preQuestionImage =
-      document.getElementById(
-        "preQuestionImage"
-      );
-
-
-    // ============================================================
-    // OBRAZ PO ZATWIERDZENIU
-    // ============================================================
-
-    const postImageBox =
-      document.getElementById(
-        "postImageBox"
-      );
-
-
-    const postQuestionImage =
-      document.getElementById(
-        "postQuestionImage"
-      );
-
-
-    // ============================================================
-    // START APLIKACJI
-    // ============================================================
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      loadExcelDatabase
-    );
-
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      initTheme
-    );
-
-
-    startButton.addEventListener(
-      "click",
-      startTest
-    );
-
-
-    confirmButton.addEventListener(
-      "click",
-      confirmAnswer
-    );
-
-
-    nextButton.addEventListener(
-      "click",
-      showNextQuestion
-    );
-
-
-    themeToggle.addEventListener(
-      "click",
-      toggleTheme
-    );
-
-
-    // ============================================================
-    // TRYB NOCNY — INICJALIZACJA
-    // ============================================================
-
-    function initTheme() {
-
-      const savedTheme =
-        localStorage.getItem(
-          THEME_STORAGE_KEY
-        );
-
-
-      if (
-        savedTheme === "dark"
-      ) {
-
-        enableDarkMode();
-
-      } else {
-
-        disableDarkMode();
-      }
-    }
-
-
-    // ============================================================
-    // PRZEŁĄCZANIE TRYBU
-    // ============================================================
-
-    function toggleTheme() {
-
-      if (
-        document.body.classList.contains(
-          "dark-mode"
-        )
-      ) {
-
-        disableDarkMode();
-
-      } else {
-
-        enableDarkMode();
-      }
-    }
-
-
-    // ============================================================
-    // WŁĄCZ TRYB NOCNY
-    // ============================================================
-
-    function enableDarkMode() {
-
-      document.body.classList.add(
-        "dark-mode"
-      );
-
-
-      localStorage.setItem(
-        THEME_STORAGE_KEY,
-        "dark"
-      );
-
-
-      themeToggle.textContent =
-        "☀️";
-
-
-      themeToggle.setAttribute(
-        "aria-label",
-        "Wyłącz tryb nocny"
-      );
-
-
-      themeToggle.setAttribute(
-        "title",
-        "Wyłącz tryb nocny"
-      );
-
-
-      document
-        .querySelector(
-          'meta[name="theme-color"]'
-        )
-        ?.setAttribute(
-          "content",
-          "#121815"
-        );
-    }
-
-
-    // ============================================================
-    // WYŁĄCZ TRYB NOCNY
-    // ============================================================
-
-    function disableDarkMode() {
-
-      document.body.classList.remove(
-        "dark-mode"
-      );
-
-
-      localStorage.setItem(
-        THEME_STORAGE_KEY,
-        "light"
-      );
-
-
-      themeToggle.textContent =
-        "🌙";
-
-
-      themeToggle.setAttribute(
-        "aria-label",
-        "Włącz tryb nocny"
-      );
-
-
-      themeToggle.setAttribute(
-        "title",
-        "Włącz tryb nocny"
-      );
-
-
-      document
-        .querySelector(
-          'meta[name="theme-color"]'
-        )
-        ?.setAttribute(
-          "content",
-          "#173b2a"
-        );
-    }
-
-
-    // ============================================================
-    // WCZYTYWANIE EXCELA
-    // ============================================================
-
-    async function loadExcelDatabase() {
-
-      try {
-
-        const cacheBuster =
-          `?v=${Date.now()}`;
-
-
-        const response =
-          await fetch(
-            `${EXCEL_FILE}${cacheBuster}`,
-            {
-              cache: "no-store"
+                id="themeToggle"
+                class="theme-toggle"
+                type="button"
+                aria-label="Włącz tryb nocny"
+                title="Włącz tryb nocny"
+            >🌙</button>
+        </header>
+
+        <!-- Ekran startowy -->
+
+        <section id="startScreen" class="screen active">
+            <div class="card start-card">
+                <h2>Sprawdź swoją wiedzę</h2>
+
+                <p>
+                    Test składa się z <strong>20 pytań</strong> losowanych z bazy.
+                    W pytaniach może występować więcej niż jedna prawidłowa odpowiedź.
+                    Odpowiedź zostanie oceniona dopiero po zatwierdzeniu.
+                </p>
+
+                <button id="startButton" class="btn btn-primary" disabled>
+                    Rozpocznij test
+                </button>
+
+                <div id="loadStatus" class="status">
+                    Ładowanie bazy pytań…
+                </div>
+            </div>
+        </section>
+
+        <!-- Ekran testu -->
+
+        <section id="testScreen" class="screen">
+            <div class="topbar">
+                <span id="questionCounter">Pytanie 1 z 20</span>
+                <span id="questionId"></span>
+            </div>
+
+            <div class="progress">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+
+            <div class="card">
+                <div id="questionNumber" class="question-number"></div>
+                <h2 id="questionText" class="question"></h2>
+
+                <div id="answers" class="answers"></div>
+
+                <div id="preImageBox" class="image-box">
+                    <div class="info-label">Ilustracja</div>
+                    <img id="preQuestionImage" src="" alt="Ilustracja do pytania">
+                </div>
+
+                <div class="actions">
+                    <button id="confirmButton" class="btn btn-primary">
+                        Zatwierdź odpowiedź
+                    </button>
+                </div>
+
+                <div id="result" class="result">
+                    <div id="resultTitle" class="result-title"></div>
+                    <div id="solutionList" class="solution-list"></div>
+
+                    <div id="explanationBox" class="info-box">
+                        <div class="info-label">Wyjaśnienie</div>
+                        <div id="explanation" class="info-content"></div>
+                    </div>
+
+                    <div id="legalBox" class="info-box">
+                        <div class="info-label">Podstawa prawna</div>
+                        <div id="legalBasis" class="info-content"></div>
+                    </div>
+
+                    <div id="postImageBox" class="image-box">
+                        <div class="info-label">Ilustracja</div>
+                        <img id="postQuestionImage" src="" alt="Ilustracja do pytania">
+                    </div>
+
+                    <div class="actions">
+                        <button id="nextButton" class="btn btn-primary">
+                            Następne pytanie
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ekran statystyk -->
+
+        <section id="statsScreen" class="screen">
+            <div class="card stats-card">
+                <h2>Podsumowanie testu</h2>
+
+                <div id="statsPercentage" class="stats-score">0%</div>
+                <p class="stats-subtitle">Twój wynik z tego testu</p>
+
+                <div class="stats-progress">
+                    <div id="statsProgressFill" class="stats-progress-fill"></div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stats-item">
+                        <strong id="statsCorrect">0</strong>
+                        <span>Poprawne odpowiedzi</span>
+                    </div>
+
+                    <div class="stats-item">
+                        <strong id="statsWrong">0</strong>
+                        <span>Błędne odpowiedzi</span>
+                    </div>
+
+                    <div class="stats-item">
+                        <strong id="statsTotal">0</strong>
+                        <span>Liczba pytań</span>
+                    </div>
+                </div>
+
+                <div class="stats-item" style="max-width: 260px; margin: 0 auto">
+                    <strong id="statsTime">00:00</strong>
+                    <span>Czas rozwiązywania</span>
+                </div>
+
+                <p id="statsMessage" class="stats-message"></p>
+
+                <div class="actions" style="justify-content: center">
+                    <button id="restartButton" class="btn btn-primary">
+                        Rozwiąż kolejny test
+                    </button>
+
+                    <button id="backButton" class="btn btn-secondary">
+                        Wróć do ekranu startowego
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // ========================================
+        // KONFIGURACJA
+        // ========================================
+
+        const EXCEL_FILE = "Baza_danych.xlsx";
+        const QUESTIONS_PER_TEST = 20;
+        const APP_VERSION = "2026-10-16-5";
+
+        const THEME_STORAGE_KEY = "kurs_instruktora_tryb_nocny";
+        const STATISTICS_STORAGE_KEY = "kurs_instruktora_statystyki";
+
+
+        // ========================================
+        // ZMIENNE APLIKACJI
+        // ========================================
+
+        let allQuestions = [];
+        let testQuestions = [];
+        let currentQuestionIndex = 0;
+        let currentQuestion = null;
+        let selectedAnswers = [];
+
+        let testStartedAt = null;
+        let testResults = [];
+
+
+        // ========================================
+        // ELEMENTY HTML
+        // ========================================
+
+        const $ = id => document.getElementById(id);
+
+        const startScreen = $("startScreen");
+        const testScreen = $("testScreen");
+        const statsScreen = $("statsScreen");
+
+        const startButton = $("startButton");
+        const confirmButton = $("confirmButton");
+        const nextButton = $("nextButton");
+        const loadStatus = $("loadStatus");
+
+        const questionCounter = $("questionCounter");
+        const questionId = $("questionId");
+        const questionNumber = $("questionNumber");
+        const questionText = $("questionText");
+        const answersContainer = $("answers");
+        const progressFill = $("progressFill");
+
+        const result = $("result");
+        const resultTitle = $("resultTitle");
+        const solutionList = $("solutionList");
+        const explanation = $("explanation");
+        const legalBasis = $("legalBasis");
+
+        const themeToggle = $("themeToggle");
+        const preImageBox = $("preImageBox");
+        const preQuestionImage = $("preQuestionImage");
+        const postImageBox = $("postImageBox");
+        const postQuestionImage = $("postQuestionImage");
+
+        const statsPercentage = $("statsPercentage");
+        const statsProgressFill = $("statsProgressFill");
+        const statsCorrect = $("statsCorrect");
+        const statsWrong = $("statsWrong");
+        const statsTotal = $("statsTotal");
+        const statsTime = $("statsTime");
+        const statsMessage = $("statsMessage");
+
+
+        // ========================================
+        // OBSŁUGA ZDARZEŃ
+        // ========================================
+
+        document.addEventListener("DOMContentLoaded", loadExcelDatabase);
+        document.addEventListener("DOMContentLoaded", initTheme);
+
+        startButton.addEventListener("click", startTest);
+        confirmButton.addEventListener("click", confirmAnswer);
+        nextButton.addEventListener("click", showNextQuestion);
+        themeToggle.addEventListener("click", toggleTheme);
+
+        $("restartButton").addEventListener("click", startTest);
+
+        $("backButton").addEventListener("click", () => {
+            statsScreen.classList.remove("active");
+            startScreen.classList.add("active");
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        });
+
+
+        // ========================================
+        // TRYB JASNY I NOCNY
+        // ========================================
+
+        function initTheme() {
+            const saved = localStorage.getItem(THEME_STORAGE_KEY);
+
+            if (saved === "dark") {
+                enableDarkMode();
+            } else {
+                disableDarkMode();
             }
-          );
+        }
 
+        function toggleTheme() {
+            if (document.body.classList.contains("dark-mode")) {
+                disableDarkMode();
+            } else {
+                enableDarkMode();
+            }
+        }
 
-        if (!response.ok) {
+        function enableDarkMode() {
+            document.body.classList.add("dark-mode");
 
-          throw new Error(
-            `Nie udało się znaleźć pliku ${EXCEL_FILE}.`
-          );
+            localStorage.setItem(THEME_STORAGE_KEY, "dark");
+
+            themeToggle.textContent = "☀️";
+            themeToggle.setAttribute("aria-label", "Wyłącz tryb nocny");
+            themeToggle.title = "Wyłącz tryb nocny";
+
+            document
+                .querySelector('meta[name="theme-color"]')
+                ?.setAttribute("content", "#121815");
+        }
+
+        function disableDarkMode() {
+            document.body.classList.remove("dark-mode");
+
+            localStorage.setItem(THEME_STORAGE_KEY, "light");
+
+            themeToggle.textContent = "🌙";
+            themeToggle.setAttribute("aria-label", "Włącz tryb nocny");
+            themeToggle.title = "Włącz tryb nocny";
+
+            document
+                .querySelector('meta[name="theme-color"]')
+                ?.setAttribute("content", "#173b2a");
         }
 
 
-        const arrayBuffer =
-          await response.arrayBuffer();
+        // ========================================
+        // WCZYTYWANIE BAZY PYTAŃ Z EXCELA
+        // ========================================
 
+        async function loadExcelDatabase() {
+            try {
+                const response = await fetch(
+                    `${EXCEL_FILE}?v=${Date.now()}`,
+                    { cache: "no-store" }
+                );
 
-        const workbook =
-          XLSX.read(
-            arrayBuffer,
-            {
-              type: "array"
+                if (!response.ok) {
+                    throw new Error(`Nie udało się znaleźć pliku ${EXCEL_FILE}.`);
+                }
+
+                const arrayBuffer = await response.arrayBuffer();
+
+                const workbook = XLSX.read(arrayBuffer, {
+                    type: "array"
+                });
+
+                if (!workbook.SheetNames.length) {
+                    throw new Error("Plik Excel nie zawiera żadnego arkusza.");
+                }
+
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
+                const rows = XLSX.utils.sheet_to_json(worksheet, {
+                    header: 1,
+                    defval: ""
+                });
+
+                if (!rows.length) {
+                    throw new Error("Arkusz Excel jest pusty.");
+                }
+
+                const headerIndex = {};
+
+                rows[0].forEach((header, index) => {
+                    const normalized = normalizeHeader(header);
+
+                    if (normalized) {
+                        headerIndex[normalized] = index;
+                    }
+                });
+
+                const requiredColumns = [
+                    "ID",
+                    "PYTANIE",
+                    "ODPOWIEDZ_A",
+                    "ODPOWIEDZ_B",
+                    "ODPOWIEDZ_C",
+                    "POPRAWNA_A",
+                    "POPRAWNA_B",
+                    "POPRAWNA_C",
+                    "WYJAŚNIENIE",
+                    "PODSTAWA_PRAWNA",
+                    "OBRAZ",
+                    "MOMENT_OBRAZU"
+                ];
+
+                const missing = requiredColumns.filter(
+                    column => headerIndex[column] === undefined
+                );
+
+                if (missing.length) {
+                    throw new Error(
+                        `Brakuje kolumn w Excelu: ${missing.join(", ")}`
+                    );
+                }
+
+                allQuestions = rows
+                    .slice(1)
+                    .map(row => normalizeQuestion(row, headerIndex))
+                    .filter(question => question.question);
+
+                if (!allQuestions.length) {
+                    throw new Error(
+                        "Excel został odczytany, ale nie znaleziono żadnych pytań."
+                    );
+                }
+
+                const invalid = allQuestions.filter(
+                    question => question.correctAnswers.length === 0
+                );
+
+                if (invalid.length) {
+                    throw new Error(
+                        `W bazie jest ${invalid.length} pytań bez zaznaczonej prawidłowej odpowiedzi.`
+                    );
+                }
+
+                const invalidMoments = allQuestions.filter(
+                    question =>
+                        question.image &&
+                        question.imageMoment !== "" &&
+                        question.imageMoment !== "PRZED" &&
+                        question.imageMoment !== "PO"
+                );
+
+                if (invalidMoments.length) {
+                    const examples = invalidMoments
+                        .slice(0, 5)
+                        .map(question =>
+                            `${question.id || "brak ID"}: "${question.imageMoment}"`
+                        )
+                        .join(", ");
+
+                    throw new Error(
+                        `Nieprawidłowa wartość MOMENT_OBRAZU. ` +
+                        `Dozwolone są tylko PRZED, PO lub pusta komórka. ` +
+                        `Błędne rekordy: ${examples}`
+                    );
+                }
+
+                loadStatus.textContent = `Załadowano ${allQuestions.length} pytań.`;
+                startButton.disabled = false;
+
+            } catch (error) {
+                console.error(error);
+
+                loadStatus.textContent = `Błąd: ${error.message}`;
+                loadStatus.classList.add("error");
+
+                startButton.disabled = true;
             }
-          );
-
-
-        if (
-          !workbook.SheetNames.length
-        ) {
-
-          throw new Error(
-            "Plik Excel nie zawiera żadnego arkusza."
-          );
         }
 
-
-        const sheetName =
-          workbook.SheetNames[0];
-
-
-        const worksheet =
-          workbook.Sheets[sheetName];
-
-
-        const rows =
-          XLSX.utils.sheet_to_json(
-            worksheet,
-            {
-              header: 1,
-              defval: ""
-            }
-          );
-
-
-        if (!rows.length) {
-
-          throw new Error(
-            "Arkusz Excel jest pusty."
-          );
-        }
-
-
-        const rawHeaders =
-          rows[0];
-
-
-        const headerIndex = {};
-
-
-        rawHeaders.forEach(
-          (header, index) => {
-
-            const normalized =
-              normalizeHeader(
-                header
-              );
-
-
-            if (normalized) {
-
-              headerIndex[
-                normalized
-              ] = index;
+        function normalizeHeader(value) {
+            if (value === null || value === undefined) {
+                return "";
             }
 
-          }
-        );
-
-
-        // ========================================================
-        // NOWA STRUKTURA BAZY
-        // ========================================================
-
-        const requiredColumns = [
-
-          "ID",
-
-          "PYTANIE",
-
-          "ODPOWIEDZ_A",
-
-          "ODPOWIEDZ_B",
-
-          "ODPOWIEDZ_C",
-
-          "POPRAWNA_A",
-
-          "POPRAWNA_B",
-
-          "POPRAWNA_C",
-
-          "WYJAŚNIENIE",
-
-          "PODSTAWA_PRAWNA",
-
-          "OBRAZ",
-
-          "MOMENT_OBRAZU"
-
-        ];
-
-
-        const missingColumns =
-          requiredColumns.filter(
-            column =>
-              headerIndex[column] ===
-              undefined
-          );
-
-
-        if (
-          missingColumns.length
-        ) {
-
-          throw new Error(
-            `Brakuje kolumn w Excelu: ${missingColumns.join(", ")}`
-          );
+            return String(value)
+                .trim()
+                .toUpperCase()
+                .replace(/\s+/g, "_");
         }
 
+        function getCell(row, headerIndex, name) {
+            const index = headerIndex[name];
 
-        // ========================================================
-        // ODCZYT PYTAŃ
-        // ========================================================
+            return index === undefined ? "" : row[index] ?? "";
+        }
 
-        allQuestions =
-          rows
-            .slice(1)
-            .map(
-              row =>
-                normalizeQuestion(
-                  row,
-                  headerIndex
-                )
+        function normalizeQuestion(row, headerIndex) {
+            const correctAnswers = [];
+
+            if (isCorrectFlag(getCell(row, headerIndex, "POPRAWNA_A"))) {
+                correctAnswers.push("A");
+            }
+
+            if (isCorrectFlag(getCell(row, headerIndex, "POPRAWNA_B"))) {
+                correctAnswers.push("B");
+            }
+
+            if (isCorrectFlag(getCell(row, headerIndex, "POPRAWNA_C"))) {
+                correctAnswers.push("C");
+            }
+
+            const imageMoment = String(
+                getCell(row, headerIndex, "MOMENT_OBRAZU")
             )
-            .filter(
-              question =>
-                question.question
-            );
+                .trim()
+                .toUpperCase();
 
+            return {
+                id: String(getCell(row, headerIndex, "ID")).trim(),
 
-        if (
-          !allQuestions.length
-        ) {
+                question: String(
+                    getCell(row, headerIndex, "PYTANIE")
+                ).trim(),
 
-          throw new Error(
-            "Excel został odczytany, ale nie znaleziono żadnych pytań."
-          );
+                answers: {
+                    A: String(
+                        getCell(row, headerIndex, "ODPOWIEDZ_A")
+                    ).trim(),
+
+                    B: String(
+                        getCell(row, headerIndex, "ODPOWIEDZ_B")
+                    ).trim(),
+
+                    C: String(
+                        getCell(row, headerIndex, "ODPOWIEDZ_C")
+                    ).trim()
+                },
+
+                correctAnswers,
+
+                explanation: String(
+                    getCell(row, headerIndex, "WYJAŚNIENIE")
+                ).trim(),
+
+                legalBasis: String(
+                    getCell(row, headerIndex, "PODSTAWA_PRAWNA")
+                ).trim(),
+
+                image: String(
+                    getCell(row, headerIndex, "OBRAZ")
+                ).trim(),
+
+                imageMoment
+            };
+        }
+
+        function isCorrectFlag(value) {
+            if (value === null || value === undefined) {
+                return false;
+            }
+
+            return [
+                "1",
+                "TRUE",
+                "PRAWDA",
+                "TAK",
+                "YES",
+                "X"
+            ].includes(String(value).trim().toUpperCase());
         }
 
 
-        // ========================================================
-        // KONTROLA POPRAWNYCH ODPOWIEDZI
-        // ========================================================
+        // ========================================
+        // ROZPOCZĘCIE TESTU
+        // ========================================
 
-        const invalidQuestions =
-          allQuestions.filter(
-            question =>
-              question.correctAnswers
-                .length === 0
-          );
+        function startTest() {
+            if (!allQuestions.length) {
+                return;
+            }
 
+            const pool = [...allQuestions];
 
-        if (
-          invalidQuestions.length
-        ) {
+            shuffle(pool);
 
-          throw new Error(
-            `W bazie jest ${invalidQuestions.length} pytań bez zaznaczonej prawidłowej odpowiedzi.`
-          );
+            testQuestions = pool.slice(
+                0,
+                Math.min(QUESTIONS_PER_TEST, pool.length)
+            );
+
+            currentQuestionIndex = 0;
+            testResults = [];
+            testStartedAt = Date.now();
+
+            statsScreen.classList.remove("active");
+            startScreen.classList.remove("active");
+            testScreen.classList.add("active");
+
+            showQuestion();
         }
 
 
-        // ========================================================
-        // KONTROLA MOMENT_OBRAZU
-        // ========================================================
+        // ========================================
+        // WYŚWIETLANIE PYTANIA
+        // ========================================
 
-        const invalidImageMoments =
-          allQuestions.filter(
-            question =>
-              question.image &&
-              question.imageMoment !== "" &&
-              question.imageMoment !== "PRZED" &&
-              question.imageMoment !== "PO"
-          );
+        function showQuestion() {
+            currentQuestion = testQuestions[currentQuestionIndex];
+            selectedAnswers = [];
 
+            result.classList.remove("visible");
+            confirmButton.disabled = false;
 
-        if (
-          invalidImageMoments.length
-        ) {
+            questionCounter.textContent =
+                `Pytanie ${currentQuestionIndex + 1} z ${testQuestions.length}`;
 
-          const examples =
-            invalidImageMoments
-              .slice(0, 5)
-              .map(
-                question =>
-                  `${question.id || "brak ID"}: "${question.imageMoment}"`
-              )
-              .join(", ");
+            questionId.textContent = currentQuestion.id
+                ? `ID: ${currentQuestion.id}`
+                : "";
 
+            questionNumber.textContent =
+                `Pytanie ${currentQuestionIndex + 1}`;
 
-          throw new Error(
-            `Nieprawidłowa wartość MOMENT_OBRAZU. Dozwolone są tylko PRZED, PO lub pusta komórka. Błędne rekordy: ${examples}`
-          );
+            questionText.textContent = currentQuestion.question;
+
+            progressFill.style.width =
+                `${((currentQuestionIndex + 1) / testQuestions.length) * 100}%`;
+
+            hideImage(preImageBox, preQuestionImage);
+            hideImage(postImageBox, postQuestionImage);
+
+            renderAnswers();
+
+            if (currentQuestion.image && currentQuestion.imageMoment === "PRZED") {
+                showImage(
+                    preImageBox,
+                    preQuestionImage,
+                    currentQuestion.image
+                );
+            }
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        }
+
+        function renderAnswers() {
+            answersContainer.innerHTML = "";
+
+            ["A", "B", "C"].forEach(letter => {
+                const answer = currentQuestion.answers[letter];
+
+                if (!answer) {
+                    return;
+                }
+
+                const wrapper = document.createElement("div");
+                wrapper.className = "answer";
+
+                const input = document.createElement("input");
+                input.type = "checkbox";
+                input.id = `answer-${letter}`;
+                input.value = letter;
+
+                input.addEventListener("change", handleAnswerSelection);
+
+                const label = document.createElement("label");
+                label.htmlFor = input.id;
+
+                const answerLetter = document.createElement("span");
+                answerLetter.className = "answer-letter";
+                answerLetter.textContent = letter;
+
+                const text = document.createElement("span");
+                text.className = "answer-text";
+                text.textContent = answer;
+
+                label.append(answerLetter, text);
+                wrapper.append(input, label);
+
+                answersContainer.appendChild(wrapper);
+            });
+        }
+
+        function handleAnswerSelection(event) {
+            const letter = event.target.value;
+
+            if (event.target.checked) {
+                if (!selectedAnswers.includes(letter)) {
+                    selectedAnswers.push(letter);
+                }
+            } else {
+                selectedAnswers = selectedAnswers.filter(
+                    item => item !== letter
+                );
+            }
+
+            selectedAnswers.sort();
         }
 
 
-        loadStatus.textContent =
-          `Załadowano ${allQuestions.length} pytań.`;
+        // ========================================
+        // SPRAWDZANIE ODPOWIEDZI
+        // ========================================
 
+        function confirmAnswer() {
+            if (selectedAnswers.length === 0) {
+                alert("Najpierw zaznacz odpowiedź.");
+                return;
+            }
 
-        startButton.disabled =
-          false;
+            const correctAnswers = [
+                ...currentQuestion.correctAnswers
+            ].sort();
 
+            const selected = [
+                ...selectedAnswers
+            ].sort();
 
-      } catch (error) {
+            const correct = arraysEqual(selected, correctAnswers);
 
-        console.error(error);
+            testResults.push({
+                id: currentQuestion.id,
+                correct
+            });
 
+            showResult(correct);
 
-        loadStatus.textContent =
-          `Błąd: ${error.message}`;
+            saveAnswerStatistic(currentQuestion.id, correct);
+            disableAnswerInputs();
 
-
-        loadStatus.classList.add(
-          "error"
-        );
-
-
-        startButton.disabled =
-          true;
-      }
-    }
-
-
-    // ============================================================
-    // NORMALIZACJA NAZW NAGŁÓWKÓW
-    // ============================================================
-
-    function normalizeHeader(
-      value
-    ) {
-
-      if (
-        value === null ||
-        value === undefined
-      ) {
-
-        return "";
-      }
-
-
-      return String(value)
-        .trim()
-        .toUpperCase()
-        .replace(/\s+/g, "_");
-    }
-
-
-    // ============================================================
-    // ODCZYT KOMÓRKI Z WIERSZA
-    // ============================================================
-
-    function getCell(
-      row,
-      headerIndex,
-      headerName
-    ) {
-
-      const index =
-        headerIndex[headerName];
-
-
-      if (
-        index === undefined
-      ) {
-
-        return "";
-      }
-
-
-      return row[index] ?? "";
-    }
-
-
-    // ============================================================
-    // NORMALIZACJA WIERSZA EXCELA
-    // ============================================================
-
-    function normalizeQuestion(
-      row,
-      headerIndex
-    ) {
-
-      const correctAnswers = [];
-
-
-      // ========================================================
-      // POPRAWNA A
-      // ========================================================
-
-      if (
-        isCorrectFlag(
-          getCell(
-            row,
-            headerIndex,
-            "POPRAWNA_A"
-          )
-        )
-      ) {
-
-        correctAnswers.push(
-          "A"
-        );
-      }
-
-
-      // ========================================================
-      // POPRAWNA B
-      // ========================================================
-
-      if (
-        isCorrectFlag(
-          getCell(
-            row,
-            headerIndex,
-            "POPRAWNA_B"
-          )
-        )
-      ) {
-
-        correctAnswers.push(
-          "B"
-        );
-      }
-
-
-      // ========================================================
-      // POPRAWNA C
-      // ========================================================
-
-      if (
-        isCorrectFlag(
-          getCell(
-            row,
-            headerIndex,
-            "POPRAWNA_C"
-          )
-        )
-      ) {
-
-        correctAnswers.push(
-          "C"
-        );
-      }
-
-
-      // ========================================================
-      // MOMENT OBRAZU
-      // ========================================================
-
-      const imageMoment =
-        String(
-          getCell(
-            row,
-            headerIndex,
-            "MOMENT_OBRAZU"
-          )
-        )
-          .trim()
-          .toUpperCase();
-
-
-      // ========================================================
-      // ZWRACAMY PYTANIE
-      // ========================================================
-
-      return {
-
-        id:
-          String(
-            getCell(
-              row,
-              headerIndex,
-              "ID"
-            )
-          ).trim(),
-
-
-        question:
-          String(
-            getCell(
-              row,
-              headerIndex,
-              "PYTANIE"
-            )
-          ).trim(),
-
-
-        answers: {
-
-          A:
-            String(
-              getCell(
-                row,
-                headerIndex,
-                "ODPOWIEDZ_A"
-              )
-            ).trim(),
-
-
-          B:
-            String(
-              getCell(
-                row,
-                headerIndex,
-                "ODPOWIEDZ_B"
-              )
-            ).trim(),
-
-
-          C:
-            String(
-              getCell(
-                row,
-                headerIndex,
-                "ODPOWIEDZ_C"
-              )
-            ).trim()
-        },
-
-
-        correctAnswers,
-
-
-        explanation:
-          String(
-            getCell(
-              row,
-              headerIndex,
-              "WYJAŚNIENIE"
-            )
-          ).trim(),
-
-
-        legalBasis:
-          String(
-            getCell(
-              row,
-              headerIndex,
-              "PODSTAWA_PRAWNA"
-            )
-          ).trim(),
-
-
-        image:
-          String(
-            getCell(
-              row,
-              headerIndex,
-              "OBRAZ"
-            )
-          ).trim(),
-
-
-        imageMoment
-      };
-    }
-
-
-    // ============================================================
-    // ODCZYT FLAGI 0/1
-    // ============================================================
-
-    function isCorrectFlag(
-      value
-    ) {
-
-      if (
-        value === null ||
-        value === undefined
-      ) {
-
-        return false;
-      }
-
-
-      const normalized =
-        String(value)
-          .trim()
-          .toUpperCase();
-
-
-      return (
-
-        normalized === "1" ||
-
-        normalized === "TRUE" ||
-
-        normalized === "PRAWDA" ||
-
-        normalized === "TAK" ||
-
-        normalized === "YES" ||
-
-        normalized === "X"
-
-      );
-    }
-
-
-    // ============================================================
-    // START TESTU
-    // ============================================================
-
-    function startTest() {
-
-      if (
-        !allQuestions.length
-      ) {
-
-        return;
-      }
-
-
-      const pool =
-        [...allQuestions];
-
-
-      shuffle(pool);
-
-
-      testQuestions =
-        pool.slice(
-          0,
-          Math.min(
-            QUESTIONS_PER_TEST,
-            pool.length
-          )
-        );
-
-
-      currentQuestionIndex =
-        0;
-
-
-      startScreen.classList.remove(
-        "active"
-      );
-
-
-      testScreen.classList.add(
-        "active"
-      );
-
-
-      showQuestion();
-    }
-
-
-    // ============================================================
-    // WYŚWIETLENIE PYTANIA
-    // ============================================================
-
-    function showQuestion() {
-
-      currentQuestion =
-        testQuestions[
-          currentQuestionIndex
-        ];
-
-
-      selectedAnswers = [];
-
-
-      result.classList.remove(
-        "visible"
-      );
-
-
-      confirmButton.disabled =
-        false;
-
-
-      questionCounter.textContent =
-        `Pytanie ${
-          currentQuestionIndex + 1
-        } z ${
-          testQuestions.length
-        }`;
-
-
-      questionId.textContent =
-        currentQuestion.id
-          ? `ID: ${currentQuestion.id}`
-          : "";
-
-
-      questionNumber.textContent =
-        `Pytanie ${
-          currentQuestionIndex + 1
-        }`;
-
-
-      questionText.textContent =
-        currentQuestion.question;
-
-
-      progressFill.style.width =
-        `${
-          (
-            (currentQuestionIndex + 1) /
-            testQuestions.length
-          ) * 100
-        }%`;
-
-
-      // ========================================================
-      // CZYŚCIMY OBRAZY
-      // ========================================================
-
-      hideImage(
-        preImageBox,
-        preQuestionImage
-      );
-
-
-      hideImage(
-        postImageBox,
-        postQuestionImage
-      );
-
-
-      renderAnswers();
-
-
-      // ========================================================
-      // OBRAZ PRZED ZATWIERDZENIEM
-      // ========================================================
-
-      if (
-        currentQuestion.image &&
-        currentQuestion.imageMoment ===
-          "PRZED"
-      ) {
-
-        showImage(
-          preImageBox,
-          preQuestionImage,
-          currentQuestion.image
-        );
-      }
-
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-      });
-    }
-
-
-    // ============================================================
-    // WYŚWIETLENIE ODPOWIEDZI
-    // ============================================================
-
-    function renderAnswers() {
-
-      answersContainer.innerHTML =
-        "";
-
-
-      const answerLetters = [
-        "A",
-        "B",
-        "C"
-      ];
-
-
-      answerLetters.forEach(
-        letter => {
-
-          const answer =
-            currentQuestion
-              .answers[letter];
-
-
-          if (!answer) {
-
-            return;
-          }
-
-
-          const wrapper =
-            document.createElement(
-              "div"
-            );
-
-
-          wrapper.className =
-            "answer";
-
-
-          const input =
-            document.createElement(
-              "input"
-            );
-
-
-          input.type =
-            "checkbox";
-
-
-          input.id =
-            `answer-${letter}`;
-
-
-          input.value =
-            letter;
-
-
-          input.addEventListener(
-            "change",
-            handleAnswerSelection
-          );
-
-
-          const label =
-            document.createElement(
-              "label"
-            );
-
-
-          label.htmlFor =
-            input.id;
-
-
-          const answerLetter =
-            document.createElement(
-              "span"
-            );
-
-
-          answerLetter.className =
-            "answer-letter";
-
-
-          answerLetter.textContent =
-            letter;
-
-
-          const text =
-            document.createElement(
-              "span"
-            );
-
-
-          text.className =
-            "answer-text";
-
-
-          text.textContent =
-            answer;
-
-
-          label.appendChild(
-            answerLetter
-          );
-
-
-          label.appendChild(
-            text
-          );
-
-
-          wrapper.appendChild(
-            input
-          );
-
-
-          wrapper.appendChild(
-            label
-          );
-
-
-          answersContainer.appendChild(
-            wrapper
-          );
-
-        }
-      );
-    }
-
-
-    // ============================================================
-    // ZAZNACZANIE ODPOWIEDZI
-    // ============================================================
-
-    function handleAnswerSelection(
-      event
-    ) {
-
-      const letter =
-        event.target.value;
-
-
-      if (
-        event.target.checked
-      ) {
-
-        if (
-          !selectedAnswers.includes(
-            letter
-          )
-        ) {
-
-          selectedAnswers.push(
-            letter
-          );
+            confirmButton.disabled = true;
         }
 
-      } else {
-
-        selectedAnswers =
-          selectedAnswers.filter(
-            selected =>
-              selected !== letter
-          );
-      }
-
-
-      selectedAnswers.sort();
-    }
-
-
-    // ============================================================
-    // ZATWIERDZENIE ODPOWIEDZI
-    // ============================================================
-
-    function confirmAnswer() {
-
-      if (
-        selectedAnswers.length ===
-        0
-      ) {
-
-        alert(
-          "Najpierw zaznacz odpowiedź."
-        );
-
-
-        return;
-      }
-
-
-      const correctAnswers =
-        [
-          ...currentQuestion
-            .correctAnswers
-        ].sort();
-
-
-      const selected =
-        [
-          ...selectedAnswers
-        ].sort();
-
-
-      const correct =
-        arraysEqual(
-          selected,
-          correctAnswers
-        );
-
-
-      showResult(
-        correct
-      );
-
-
-      saveAnswerStatistic(
-        currentQuestion.id,
-        correct
-      );
-
-
-      disableAnswerInputs();
-
-
-      confirmButton.disabled =
-        true;
-    }
-
-
-    // ============================================================
-    // BLOKADA ODPOWIEDZI
-    // ============================================================
-
-    function disableAnswerInputs() {
-
-      const inputs =
-        answersContainer.querySelectorAll(
-          "input"
-        );
-
-
-      inputs.forEach(
-        input => {
-
-          input.disabled =
-            true;
-
+        function disableAnswerInputs() {
+            answersContainer
+                .querySelectorAll("input")
+                .forEach(input => {
+                    input.disabled = true;
+                });
         }
-      );
-    }
 
+        function showResult(isCorrect) {
+            result.classList.add("visible");
 
-    // ============================================================
-    // POKAZANIE ROZWIĄZANIA
-    // ============================================================
+            resultTitle.textContent = isCorrect
+                ? "✓ Poprawna odpowiedź"
+                : "✕ Niepoprawna odpowiedź";
 
-    function showResult(
-      isCorrect
-    ) {
+            resultTitle.className =
+                `result-title ${isCorrect ? "correct" : "wrong"}`;
 
-      result.classList.add(
-        "visible"
-      );
+            solutionList.innerHTML = "";
 
+            const selected = new Set(selectedAnswers);
+            const correct = new Set(currentQuestion.correctAnswers);
 
-      resultTitle.textContent =
-        isCorrect
-          ? "✓ Poprawna odpowiedź"
-          : "✕ Niepoprawna odpowiedź";
+            ["A", "B", "C"].forEach(letter => {
+                const answer = currentQuestion.answers[letter];
 
+                if (!answer) {
+                    return;
+                }
 
-      resultTitle.className =
-        `result-title ${
-          isCorrect
-            ? "correct"
-            : "wrong"
-        }`;
+                const item = document.createElement("div");
+                item.className = "solution-item";
 
+                const isCorrectAnswer = correct.has(letter);
+                const wasSelected = selected.has(letter);
 
-      solutionList.innerHTML =
-        "";
+                if (isCorrectAnswer && wasSelected) {
+                    item.classList.add("correct-answer");
 
+                    item.innerHTML =
+                        `<strong>✓ Prawidłowa:</strong> ${escapeHtml(answer)}`;
 
-      const selected =
-        new Set(
-          selectedAnswers
-        );
+                } else if (!isCorrectAnswer && wasSelected) {
+                    item.classList.add("selected-wrong");
 
+                    item.innerHTML =
+                        `<strong>✕ Zaznaczona, ale nieprawidłowa:</strong> ${escapeHtml(answer)}`;
 
-      const correct =
-        new Set(
-          currentQuestion
-            .correctAnswers
-        );
+                } else if (isCorrectAnswer && !wasSelected) {
+                    item.classList.add("correct-missed");
 
+                    item.innerHTML =
+                        `<strong>✓ Prawidłowa — niezaznaczona:</strong> ${escapeHtml(answer)}`;
 
-      [
-        "A",
-        "B",
-        "C"
-      ].forEach(
-        letter => {
+                } else {
+                    item.innerHTML =
+                        `<strong>Nieprawidłowa:</strong> ${escapeHtml(answer)}`;
+                }
 
-          const answer =
-            currentQuestion
-              .answers[letter];
+                solutionList.appendChild(item);
+            });
 
+            explanation.textContent =
+                currentQuestion.explanation || "Brak wyjaśnienia w bazie.";
 
-          if (!answer) {
+            legalBasis.textContent =
+                currentQuestion.legalBasis || "Brak podstawy prawnej w bazie.";
 
-            return;
-          }
+            hideImage(postImageBox, postQuestionImage);
 
+            if (currentQuestion.image && currentQuestion.imageMoment === "PO") {
+                showImage(
+                    postImageBox,
+                    postQuestionImage,
+                    currentQuestion.image
+                );
+            }
 
-          const item =
-            document.createElement(
-              "div"
-            );
-
-
-          item.className =
-            "solution-item";
-
-
-          const isCorrectAnswer =
-            correct.has(
-              letter
-            );
-
-
-          const wasSelected =
-            selected.has(
-              letter
-            );
-
-
-          if (
-            isCorrectAnswer &&
-            wasSelected
-          ) {
-
-            item.classList.add(
-              "correct-answer"
-            );
-
-
-            item.innerHTML =
-              `<strong>✓ Prawidłowa:</strong> ${escapeHtml(answer)}`;
-
-
-          } else if (
-            !isCorrectAnswer &&
-            wasSelected
-          ) {
-
-            item.classList.add(
-              "selected-wrong"
-            );
-
-
-            item.innerHTML =
-              `<strong>✕ Zaznaczona, ale nieprawidłowa:</strong> ${escapeHtml(answer)}`;
-
-
-          } else if (
-            isCorrectAnswer &&
-            !wasSelected
-          ) {
-
-            item.classList.add(
-              "correct-missed"
-            );
-
-
-            item.innerHTML =
-              `<strong>✓ Prawidłowa — niezaznaczona:</strong> ${escapeHtml(answer)}`;
-
-
-          } else {
-
-            item.innerHTML =
-              `<strong>Nieprawidłowa:</strong> ${escapeHtml(answer)}`;
-          }
-
-
-          solutionList.appendChild(
-            item
-          );
-
+            result.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
         }
-      );
 
 
-      // ========================================================
-      // WYJAŚNIENIE
-      // ========================================================
+        // ========================================
+        // OBSŁUGA ILUSTRACJI
+        // ========================================
+
+        function showImage(imageBox, imageElement, imagePath) {
+            imageElement.removeAttribute("src");
+            imageBox.classList.remove("visible");
+
+            imageElement.onerror = () => {
+                imageBox.classList.remove("visible");
+                imageElement.removeAttribute("src");
+            };
+
+            imageElement.onload = () => {
+                imageBox.classList.add("visible");
+            };
 
-      explanation.textContent =
-        currentQuestion.explanation ||
-        "Brak wyjaśnienia w bazie.";
-
-
-      // ========================================================
-      // PODSTAWA PRAWNA
-      // ========================================================
-
-      legalBasis.textContent =
-        currentQuestion.legalBasis ||
-        "Brak podstawy prawnej w bazie.";
-
-
-      // ========================================================
-      // OBRAZ PO ZATWIERDZENIU
-      // ========================================================
-
-      hideImage(
-        postImageBox,
-        postQuestionImage
-      );
-
-
-      if (
-        currentQuestion.image &&
-        currentQuestion.imageMoment ===
-          "PO"
-      ) {
-
-        showImage(
-          postImageBox,
-          postQuestionImage,
-          currentQuestion.image
-        );
-      }
-
-
-      result.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }
-
-
-    // ============================================================
-    // OBSŁUGA OBRAZU
-    // ============================================================
-
-    function showImage(
-      imageBox,
-      imageElement,
-      imagePath
-    ) {
-
-      imageElement.removeAttribute(
-        "src"
-      );
-
-
-      imageBox.classList.remove(
-        "visible"
-      );
-
-
-      imageElement.onerror =
-        () => {
-
-          imageBox.classList.remove(
-            "visible"
-          );
-
-
-          imageElement.removeAttribute(
-            "src"
-          );
-        };
-
-
-      imageElement.onload =
-        () => {
-
-          imageBox.classList.add(
-            "visible"
-          );
-        };
-
-
-      imageElement.src =
-        imagePath;
-    }
-
-
-    function hideImage(
-      imageBox,
-      imageElement
-    ) {
-
-      imageBox.classList.remove(
-        "visible"
-      );
-
-
-      imageElement.removeAttribute(
-        "src"
-      );
-
-
-      imageElement.removeAttribute(
-        "alt"
-      );
-
-
-      imageElement.alt =
-        "Ilustracja do pytania";
-    }
-
-
-    // ============================================================
-    // NASTĘPNE PYTANIE
-    // ============================================================
-
-    function showNextQuestion() {
-
-      if (
-        currentQuestionIndex <
-        testQuestions.length - 1
-      ) {
-
-        currentQuestionIndex++;
-
-
-        showQuestion();
-
-      } else {
-
-        showTestFinished();
-      }
-    }
-
-
-    // ============================================================
-    // KONIEC TESTU
-    // ============================================================
-
-    function showTestFinished() {
-
-      const solved =
-        testQuestions.length;
-
-
-      alert(
-        `Test zakończony!\nRozwiązano ${solved} pytań.`
-      );
-
-
-      testScreen.classList.remove(
-        "active"
-      );
-
-
-      startScreen.classList.add(
-        "active"
-      );
-    }
-
-
-    // ============================================================
-    // STATYSTYKI
-    // ============================================================
-
-    function saveAnswerStatistic(
-      id,
-      isCorrect
-    ) {
-
-      if (!id) {
-
-        return;
-      }
-
-
-      const storageKey =
-        "kurs_instruktora_statystyki";
-
-
-      let statistics = {};
-
-
-      try {
-
-        statistics =
-          JSON.parse(
-            localStorage.getItem(
-              storageKey
-            ) || "{}"
-          );
-
-      } catch {
-
-        statistics = {};
-      }
-
-
-      if (!statistics[id]) {
-
-        statistics[id] = {
-
-          solved: 0,
-
-          correct: 0,
-
-          wrong: 0,
-
-          lastSolved: null,
-
-          lastWrong: null
-
-        };
-      }
-
-
-      statistics[id].solved++;
-
-
-      if (isCorrect) {
-
-        statistics[id].correct++;
-
-      } else {
-
-        statistics[id].wrong++;
-
-        statistics[id].lastWrong =
-          new Date().toISOString();
-      }
-
-
-      statistics[id].lastSolved =
-        new Date().toISOString();
-
-
-      localStorage.setItem(
-        storageKey,
-        JSON.stringify(
-          statistics
-        )
-      );
-    }
-
-
-    // ============================================================
-    // LOSOWANIE
-    // ============================================================
-
-    function shuffle(
-      array
-    ) {
-
-      for (
-        let i = array.length - 1;
-        i > 0;
-        i--
-      ) {
-
-        const j =
-          Math.floor(
-            Math.random() *
-            (i + 1)
-          );
-
-
-        [
-          array[i],
-          array[j]
-        ] = [
-          array[j],
-          array[i]
-        ];
-      }
-
-
-      return array;
-    }
-
-
-    // ============================================================
-    // PORÓWNANIE TABLIC
-    // ============================================================
-
-    function arraysEqual(
-      a,
-      b
-    ) {
-
-      if (
-        a.length !==
-        b.length
-      ) {
-
-        return false;
-      }
-
-
-      return a.every(
-        (
-          value,
-          index
-        ) =>
-          value ===
-          b[index]
-      );
-    }
-
-
-    // ============================================================
-    // BEZPIECZNE WSTAWIANIE TEKSTU DO innerHTML
-    // ============================================================
-
-    function escapeHtml(
-      text
-    ) {
-
-      return String(text)
-
-        .replaceAll(
-          "&",
-          "&amp;"
-        )
-
-        .replaceAll(
-          "<",
-          "&lt;"
-        )
-
-        .replaceAll(
-          ">",
-          "&gt;"
-        )
-
-        .replaceAll(
-          '"',
-          "&quot;"
-        )
-
-        .replaceAll(
-          "'",
-          "&#039;"
-        );
-    }
-
-  </script>
-
+            imageElement.src = imagePath;
+        }
+
+        function hideImage(imageBox, imageElement) {
+            imageBox.classList.remove("visible");
+            imageElement.removeAttribute("src");
+            imageElement.alt = "Ilustracja do pytania";
+        }
+
+
+        // ========================================
+        // KOLEJNE PYTANIE I ZAKOŃCZENIE TESTU
+        // ========================================
+
+        function showNextQuestion() {
+            if (currentQuestionIndex < testQuestions.length - 1) {
+                currentQuestionIndex++;
+                showQuestion();
+            } else {
+                showTestFinished();
+            }
+        }
+
+        function showTestFinished() {
+            const total = testResults.length;
+
+            const correct = testResults.filter(
+                item => item.correct
+            ).length;
+
+            const wrong = total - correct;
+
+            const percentage = total
+                ? Math.round(correct / total * 100)
+                : 0;
+
+            const elapsedSeconds = Math.max(
+                0,
+                Math.floor((Date.now() - (testStartedAt || Date.now())) / 1000)
+            );
+
+            const minutes = String(
+                Math.floor(elapsedSeconds / 60)
+            ).padStart(2, "0");
+
+            const seconds = String(
+                elapsedSeconds % 60
+            ).padStart(2, "0");
+
+            statsPercentage.textContent = `${percentage}%`;
+            statsProgressFill.style.width = `${percentage}%`;
+
+            statsCorrect.textContent = correct;
+            statsWrong.textContent = wrong;
+            statsTotal.textContent = total;
+            statsTime.textContent = `${minutes}:${seconds}`;
+
+            if (percentage === 100) {
+                statsMessage.textContent =
+                    "Świetnie! Wszystkie odpowiedzi są poprawne. Tak trzymaj!";
+
+            } else if (percentage >= 80) {
+                statsMessage.textContent =
+                    "Bardzo dobry wynik! Jesteś na dobrej drodze — " +
+                    "powtórz jeszcze pytania, które sprawiły trudność.";
+
+            } else if (percentage >= 60) {
+                statsMessage.textContent =
+                    "Całkiem nieźle, ale warto jeszcze poćwiczyć. " +
+                    "Zwróć uwagę na pytania, na które odpowiedź była błędna.";
+
+            } else {
+                statsMessage.textContent =
+                    "Potraktuj ten wynik jako wskazówkę, czego warto się pouczyć. " +
+                    "Kolejny test to szansa na poprawę!";
+            }
+
+            testScreen.classList.remove("active");
+            statsScreen.classList.add("active");
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        }
+
+
+        // ========================================
+        // STATYSTYKI ODPOWIEDZI ZAPISYWANE W PRZEGLĄDARCE
+        // ========================================
+
+        function saveAnswerStatistic(id, isCorrect) {
+            if (!id) {
+                return;
+            }
+
+            let statistics = {};
+
+            try {
+                statistics = JSON.parse(
+                    localStorage.getItem(STATISTICS_STORAGE_KEY) || "{}"
+                );
+            } catch {
+                statistics = {};
+            }
+
+            if (!statistics[id]) {
+                statistics[id] = {
+                    solved: 0,
+                    correct: 0,
+                    wrong: 0,
+                    lastSolved: null,
+                    lastWrong: null
+                };
+            }
+
+            statistics[id].solved++;
+
+            if (isCorrect) {
+                statistics[id].correct++;
+            } else {
+                statistics[id].wrong++;
+                statistics[id].lastWrong = new Date().toISOString();
+            }
+
+            statistics[id].lastSolved = new Date().toISOString();
+
+            localStorage.setItem(
+                STATISTICS_STORAGE_KEY,
+                JSON.stringify(statistics)
+            );
+        }
+
+
+        // ========================================
+        // FUNKCJE POMOCNICZE
+        // ========================================
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+
+            return array;
+        }
+
+        function arraysEqual(a, b) {
+            if (a.length !== b.length) {
+                return false;
+            }
+
+            return a.every(
+                (value, index) => value === b[index]
+            );
+        }
+
+        function escapeHtml(text) {
+            return String(text)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+    </script>
 </body>
 </html>
